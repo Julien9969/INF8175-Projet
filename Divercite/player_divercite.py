@@ -37,7 +37,7 @@ class PlayerDivercite(Player):
         return self.piece_type
 
     def to_json(self) -> str:
-        return {i:j for i,j in self.__dict__.items() if i!="timer"}
+        return {i:j for i,j in self.__dict__.items() if not i.startswith("_")}
 
     @classmethod
     def from_json(cls, data) -> Serializable:

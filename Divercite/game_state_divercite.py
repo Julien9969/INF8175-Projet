@@ -289,7 +289,7 @@ class GameStateDivercite(GameState):
             scores[player2.get_id()] += player2_stack > player1_stack
             
             if stack == 2:
-                winner = random.choice([player1.get_id(), player2.get_id()])
+                winner = player1.get_id() # random.choice([player1.get_id(), player2.get_id()])
                 scores[winner] += 1
                 break
             stack -= 1
