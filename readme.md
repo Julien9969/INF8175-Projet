@@ -62,3 +62,13 @@ En cas de problèmes, n’hésitez pas à communiquer avec votre chargé de labo
 **Note :** Il est préférable de ne pas utiliser le navigateur **Safari** pour afficher l’interface graphique.
 
 **Conseil :** Assurez-vous que vous êtes capables de faire tourner le code du projet au plus tôt.
+
+
+
+## Idées Heuristiques
+
+- Profiter des pièces placé par l'adversaire
+- Casser les tentatives de diversité de l'adversaire
+- Éviter de poser une pièce qui aide l'adversaire
+- Cas ou diversité de l'adversaire est impossible, essaye de poser une pièce qui ne rapporte pas de point à l'adversaire ex: piece verte a coté de ville rouge
+- Favoriser les tentatives de diversité plutôt que de bloquer l'adversaire
