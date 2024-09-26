@@ -1,6 +1,8 @@
 # Records of the project
 __REC__*
 
+# Abyss Zip
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
