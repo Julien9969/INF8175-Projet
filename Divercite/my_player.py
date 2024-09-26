@@ -4,6 +4,8 @@ from seahorse.game.game_state import GameState
 from game_state_divercite import GameStateDivercite
 from seahorse.utils.custom_exceptions import MethodNotImplementedError
 
+import math
+
 class MyPlayer(PlayerDivercite):
     """
     Player class for Divercite game that makes random moves.
@@ -33,6 +35,61 @@ class MyPlayer(PlayerDivercite):
         Returns:
             Action: The best action as determined by minimax.
         """
+        action = self.alpha_beta_search(current_state, depth=4)
+        return action
+        
 
-        #TODO
-        raise MethodNotImplementedError()
+    def alpha_beta_search(self, current_state: GameState, depth: int = 3) -> Action:
+        
+        alpha = -math.inf
+        beta = math.inf
+
+        best_action, _ = self.max_value(current_state, alpha, beta, depth) 
+
+        return best_action
+
+    def max_value(self, state: GameState, alpha: float, beta: float, depth: int) -> tuple[Action, float]:
+        if depth == 0 or state.is_done():
+            return None, self.move_heuristic(state)
+
+        best_action = None
+        value = -math.inf
+
+        for action in state.generate_possible_heavy_actions():
+            next_state = action.get_next_game_state()
+            _, next_value = self.min_value(next_state, alpha, beta, depth - 1)
+            if next_value > value:
+                value = next_value
+                best_action = action
+
+            alpha = max(alpha, value)
+
+            if beta <= alpha:
+                break
+
+        return best_action, value
+
+    def min_value(self, state: GameState, alpha: float, beta: float, depth: int) -> tuple[Action, float]:
+        if depth == 0 or state.is_done():
+            return None, self.move_heuristic(state)
+
+        best_action = None
+        value = math.inf
+
+        for action in state.generate_possible_heavy_actions():
+            next_state = action.get_next_game_state()
+            _, next_value = self.max_value(next_state, alpha, beta, depth - 1)
+            if next_value < value:
+                value = next_value
+                best_action = action
+
+            beta = min(beta, value)
+
+            if beta <= alpha:
+                break
+
+        return best_action, value
+
+
+    def move_heuristic(self, state: GameState) -> float:
+        return state.scores[self.get_id()]
