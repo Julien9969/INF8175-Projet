@@ -171,12 +171,12 @@ class MyPlayer(PlayerDivercite):
             if isinstance(piece, Piece):
                 if piece.get_type()[1] == 'C':
                     if piece.owner_id == player_id:
-                        score += self.evaluate_my_city((piece, pos), state.rep)/2
+                        score += self.evaluate_my_city((piece, pos), state.rep)
                     else:
                         score += self.evaluate_opponent_city((piece, pos), state.rep)
                         opponent_score += self.evaluate_my_city((piece, pos), state.rep)/2
 
-        return score - opponent_score * 0.6
+        return score - opponent_score * 0.8
 
 
 
