@@ -164,7 +164,7 @@ class MyPlayer(PlayerDivercite):
         # return filtered_actions[:(min(25, len(filtered_actions)//2))] if len(filtered_actions) > 26 else filtered_actions
         return filtered_actions[:len(filtered_actions)//3] if len(filtered_actions) > 30 else filtered_actions
    
-   
+
     def state_heuristic(self, state: GameState, ligth_action_heur: int = 0) -> int:
         player_id = self.get_id()
         score = state.scores[player_id]
@@ -240,12 +240,12 @@ class MyPlayer(PlayerDivercite):
         imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_R.values())
 
 
-        value += 2 / (imbalance_penalty/2 + 1)
+        value += 3 / (imbalance_penalty/2 + 1)
 
         avg_pieces = sum(color_counts_C.values()) / len(color_counts_C)
         imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_C.values())
 
-        value += 2 / (imbalance_penalty/2 + 1)
+        value += 3 / (imbalance_penalty/2 + 1)
 
         remaining_pieces[action.data['piece']] += 1 # restore the state
 
@@ -295,4 +295,4 @@ class MyPlayer(PlayerDivercite):
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
             return len(set(neighbor_piece_colors)) + 2
         else:
-            return sum(1 for color in neighbor_piece_colors if color == city_color) + 2
+            return sum(1 for color in neighbor_piece_colors if color == city_color)
