@@ -249,7 +249,7 @@ class MyPlayer(PlayerDivercite):
 
         remaining_pieces[action.data['piece']] += 1 # restore the state
 
-        return value + previous_h
+        return value# + previous_h
 
 
     # some logic with opponnet pieces (cant do divercite if dont have color)
@@ -262,12 +262,12 @@ class MyPlayer(PlayerDivercite):
         if len(set(neighbor_piece_colors).union(set([piece_color]))) == 4:
             return 6
         
+        # TODO check if has the need remaining pieces for state_heuristic
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color) 
-        if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
-            return len(neighbor_piece_colors) + 1
-        else:
-            return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]])
+            if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
+                return len(neighbor_piece_colors)
+        return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]])
         
 
     def evaluate_opponent_city(self, city: tuple[Piece, tuple[int, int]], board: BoardDivercite, piece_color=None) -> int:
