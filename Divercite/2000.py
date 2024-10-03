@@ -273,14 +273,14 @@ class MyPlayer(PlayerDivercite):
 
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbors.values() if isinstance(n[0], Piece)]
 
-        if len(set(neighbor_piece_colors).union(set([piece_color]))) == 4:
-            return 4 # reduire
-        
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color) 
+        if len(set(neighbor_piece_colors)) == 4:
+            return 6 # reduire
+        
         
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors) and self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
-            return len(neighbor_piece_colors)
+            return len(neighbor_piece_colors) + (1 if len(neighbor_piece_colors) == 3 else 0)
         else:
             return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]])
         
@@ -300,7 +300,7 @@ class MyPlayer(PlayerDivercite):
             return 6
         
         if len(neighbor_piece_colors) == 3 and len(set(neighbor_piece_colors)) != 3:
-            return 2
+            return 2 + 1 if piece_color != city[0].get_type()[0] else 0
         return 0
 
 
@@ -308,7 +308,7 @@ class MyPlayer(PlayerDivercite):
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbours.values() if isinstance(n[0], Piece)]
 
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
-            return len(set(neighbor_piece_colors))
+            return len(set(neighbor_piece_colors)) + (1 if len(neighbor_piece_colors) == 3 else 0)
         else:
             return sum(1 for color in neighbor_piece_colors if color == city_color)
         
