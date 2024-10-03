@@ -9,12 +9,13 @@ import sys, time, threading
 
 DIR = "./Divercite"
 ENV = "INF8175"
+SHELL = "zsh"
 
-# agent1_name = "greedy_player_divercite.py" #"2000.py"
-# agent2_name = "greedy_player_divercite.py" #findus200v2.py"
+agent1_name = "greedy_player_divercite.py" #"2000.py"
+agent2_name = "greedy_player_divercite.py" #findus200v2.py"
 
-agent1_name = "findus200v2.py"
-agent2_name = "2000.py"
+# agent1_name = "findus200v2.py"
+# agent2_name = "2000.py"
 
 class GameResult:
     def __init__(self, i, agent1, score1, time1, agent2, score2, time2, winner):
@@ -40,7 +41,12 @@ def live_elapsed_time(start_time):
 
 
 def play_game(agent1: str, agent2: str, i: int, port):
-    command = f"cmd /c \"cd {DIR} && conda activate {ENV} && python main_divercite.py -t local {agent1} {agent2} -g -p {port}\""
+
+    if sys.platform == "win32":
+        command = f"cmd /c \"cd {DIR} && conda activate {ENV} && python main_divercite.py -t local {agent1} {agent2} -g -p {port}\""
+    else:
+        command = f"{SHELL} -c \"cd {DIR} && source ~/.{SHELL.lower()}rc && conda activate {ENV} && python main_divercite.py -t local {agent1} {agent2} -g -p {port}\""
+    
     print(f"Start Game {i} - {agent1} vs {agent2} on port {port}")
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="cp437")
     
@@ -61,7 +67,7 @@ def play_game(agent1: str, agent2: str, i: int, port):
             agent1_score = (line.split(':')[-1].strip())
         elif f'Player now playing :' in line:
             time_info = (output[j-1].split(':')[-1].strip())
-            print(time_info)
+            # print(time_info)
             if f'{agent1.replace(".py", "")}_1' in line and agent1_time is None:
                 agent1_time = time_info
             elif f'{agent2.replace(".py", "")}_2' in line and agent2_time is None:
@@ -151,3 +157,5 @@ if __name__ == "__main__":
     # test_subprocess("cmd /c \"cd ./Divercite && conda activate INF8175 && python main_divercite.py -t local greedy_player_divercite.py greedy_player_divercite.py -g -p 16565\"")
     results = run_simulation()
     display_results(results)
+
+    # test_subprocess("zsh -c \"cd ./Divercite && source ~/.zshrc && conda activate INF8175 && python main_divercite.py -t local greedy_player_divercite.py greedy_player_divercite.py -g -p 16565\"")
