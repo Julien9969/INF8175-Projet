@@ -86,16 +86,19 @@ class MyPlayer(PlayerDivercite):
         # if length < 80:
         #     return 4
         # return 3
+        if length < 6:
+            return 11
+
         if length < 10:
-            return 8
-        if length < 12:
+            return 9
+        if length < 15:
             return 7
-        if length < 20:
-            return 6
+        # if length < 20:
+        #     return 6
         if length < 45:
             return 5
-        if length < 80:
-            return 4
+        # if length < 80:
+        #     return 4
         return 3
 
     def alpha_beta_search(self, current_state: GameStateDivercite, depth) -> Action:
@@ -118,7 +121,7 @@ class MyPlayer(PlayerDivercite):
         
         actions = self.filter_actions(state, act_heur)
 
-        depth = min(depth, self.depth_depend_on_actions(len(actions)))
+        # depth = min(depth, self.depth_depend_on_actions(len(actions)))
 
         for action, act_heur in actions:
             heavy_action = action.get_heavy_action(state)
@@ -149,7 +152,7 @@ class MyPlayer(PlayerDivercite):
 
         actions = self.filter_actions(state, act_heur)
 
-        depth = min(depth, self.depth_depend_on_actions(len(actions)))
+        # depth = min(depth, self.depth_depend_on_actions(len(actions)))
 
         for action, act_heur in actions:
             heavy_action = action.get_heavy_action(state)
@@ -188,7 +191,7 @@ class MyPlayer(PlayerDivercite):
         player_id = self.get_id()
         # score = state.scores[player_id]
         score = 0
-        opponent_score = state.scores[self.opponent_id]
+        opponent_score = 0#state.scores[self.opponent_id]
         
         pieces_on_borad = state.rep.env.items()
 
@@ -197,12 +200,12 @@ class MyPlayer(PlayerDivercite):
                 if piece.get_type()[1] == 'C':
                     if piece.owner_id == player_id:
                         score += self.evaluate_my_city((piece, pos), state)
-                        # opponent_score += self.evaluate_opponent_city((piece, pos), state)/2
+                        opponent_score += self.evaluate_opponent_city((piece, pos), state)
                     else:
                         score += self.evaluate_opponent_city((piece, pos), state)
-                        # opponent_score += self.evaluate_my_city((piece, pos), state)/2
+                        opponent_score += self.evaluate_my_city((piece, pos), state)
 
-        return score - opponent_score*1.5 #* 1.5# * 0.6
+        return score - opponent_score#*1.5 #* 1.5# * 0.6
 
 
 
@@ -283,7 +286,7 @@ class MyPlayer(PlayerDivercite):
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color) 
         if len(set(neighbor_piece_colors)) == 4:
-            return 6 
+            return 8 
         
         
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors) and self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
