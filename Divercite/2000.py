@@ -47,22 +47,22 @@ class MyPlayer(PlayerDivercite):
         self.remaining_time = remaining_time
         self.opponent_id = [key for key in current_state.scores if key != self.get_id()][0]
 
-        # if all((value == 2 if key.endswith('C') else value == 3) for key, value in current_state.players_pieces_left[self.get_id()].items()):
-        #     possible_actions = [
-        #         d for d in current_state.generate_possible_heavy_actions()
-        #         if any('C' in key and value < 2 for key, value in d.next_game_state.players_pieces_left[self.get_id()].items())
-        #     ]
+        if all((value == 2 if key.endswith('C') else value == 3) for key, value in current_state.players_pieces_left[self.get_id()].items()):
+            possible_actions = [
+                d for d in current_state.generate_possible_heavy_actions()
+                if any('C' in key and value < 2 for key, value in d.next_game_state.players_pieces_left[self.get_id()].items())
+            ]
 
-        #     first_action_play_city = random.choice(possible_actions)
+            first_action_play_city = random.choice(possible_actions)
 
-        #     return first_action_play_city
-        if len(self.open) > 0:
-            fist_action = self.open.pop(0)
-            while not current_state.check_action(fist_action) and len(self.open) > 0:
-                fist_action = self.open.pop(0)
+            return first_action_play_city
+        # if len(self.open) > 0:
+        #     fist_action = self.open.pop(0)
+        #     while not current_state.check_action(fist_action) and len(self.open) > 0:
+        #         fist_action = self.open.pop(0)
             
-            if current_state.check_action(fist_action):
-                return fist_action.get_heavy_action(current_state)
+        #     if current_state.check_action(fist_action):
+        #         return fist_action.get_heavy_action(current_state)
 
 
 
@@ -73,19 +73,17 @@ class MyPlayer(PlayerDivercite):
 
 
     def depth_depend_on_actions(self, length: list) -> int:
-        if (self.remaining_time - (time.time() - self.start_time)) < 70: 
+        if (self.remaining_time - (time.time() - self.start_time)) < 80: 
             return 3
-        
         if length < 6:
-            return 11
-        
+            return 10
         if length < 10:
-            return 9
-        if length < 13:
+            return 8
+        if length < 12:
             return 7
-        if length < 22:
+        if length < 20:
             return 6
-        if length < 35:
+        if length < 45:
             return 5
         if length < 80:
             return 4
@@ -175,35 +173,34 @@ class MyPlayer(PlayerDivercite):
             return [(action, 1) for action in actions]
 
         filtered_actions = sorted(actions_with_heuristics, key=lambda x: x[1], reverse=True)
-        return filtered_actions[:(min(25, len(filtered_actions)//2))] if len(filtered_actions) > 26 else filtered_actions
-        return filtered_actions[:len(filtered_actions)//3] if len(filtered_actions) > 30 else filtered_actions
+        return filtered_actions[:min(len(filtered_actions)//3, 25)] if len(filtered_actions) > 20 else filtered_actions
    
 
-    def state_heuristic(self, state: GameState, ligth_action_heur: int = 0) -> int:
-        current_player_id = self.get_id()
-        opponent_id = self.opponent_id
-
-        score = state.scores[current_player_id]
-        opponent_score = state.scores[opponent_id]
+    def state_heuristic(self, state: GameStateDivercite, ligth_action_heur: int = 0) -> int:
+        player_id = self.get_id()
+        # score = state.scores[player_id]
+        score = 0
+        opponent_score = state.scores[self.opponent_id]
         
         pieces_on_borad = state.rep.env.items()
 
         for pos, piece in pieces_on_borad:
             if isinstance(piece, Piece):
                 if piece.get_type()[1] == 'C':
-                    if piece.owner_id == current_player_id:
-                        score += self.evaluate_my_city((piece, pos), state)/2
+                    if piece.owner_id == player_id:
+                        score += self.evaluate_my_city((piece, pos), state)
+                        # opponent_score += self.evaluate_opponent_city((piece, pos), state)/2
                     else:
                         score += self.evaluate_opponent_city((piece, pos), state)
-                        opponent_score += self.evaluate_my_city((piece, pos), state)/2
+                        # opponent_score += self.evaluate_my_city((piece, pos), state)/2
 
-        return score - opponent_score * 0.6
+        return score - opponent_score #* 1.5# * 0.6
 
 
 
     # try to uniformize the usage of pice by color
     def action_heuristic(self, action: LightAction, state: GameStateDivercite, previous_h=0) -> int:
-        current_player_id = self.get_id()
+        player_id = self.get_id()
         opponent_id = self.opponent_id
         
         if action.data['piece'].endswith('R'):
@@ -215,7 +212,7 @@ class MyPlayer(PlayerDivercite):
                 if not isinstance(neighbor_piece[0], Piece):  
                     continue
                 if neighbor_piece[0].piece_type[1] == 'C':  
-                    if neighbor_piece[0].owner_id == current_player_id:
+                    if neighbor_piece[0].owner_id == player_id:
                         value += self.evaluate_my_city(neighbor_piece, state, action.data['piece'][0])
                     else:
                         value += self.evaluate_opponent_city(neighbor_piece, state, action.data['piece'][0])
@@ -230,42 +227,41 @@ class MyPlayer(PlayerDivercite):
 
             value += self.city_heuristic(neighbours, action.data['piece'][0])
         
-        # jsp les playerID
-        # remaining_pieces = state.players_pieces_left[player_id]
-        # remaining_pieces[action.data['piece']] -= 1
+        remaining_pieces = state.players_pieces_left[player_id]
+        remaining_pieces[action.data['piece']] -= 1
 
-        # color_counts_R = {
-        #     'R': remaining_pieces['RR'] ,#+ remaining_pieces['RC'],
-        #     'G': remaining_pieces['GR'] ,#+ remaining_pieces['GC'],
-        #     'B': remaining_pieces['BR'] ,#+ remaining_pieces['BC'],
-        #     'Y': remaining_pieces['YR'] ,#+ remaining_pieces['YC']
+        color_counts_R = {
+            'R': remaining_pieces['RR'] ,#+ remaining_pieces['RC'],
+            'G': remaining_pieces['GR'] ,#+ remaining_pieces['GC'],
+            'B': remaining_pieces['BR'] ,#+ remaining_pieces['BC'],
+            'Y': remaining_pieces['YR'] ,#+ remaining_pieces['YC']
+        }
+
+        color_counts_C = {
+            'R': remaining_pieces['RC'],
+            'G': remaining_pieces['GC'],
+            'B': remaining_pieces['BC'],
+            'Y': remaining_pieces['YC']
+        }
+
+        # color_counts = {
+        #     'R': 3 + 2,
+        #     'G': 2 + 2,
+        #     'B': 0 + 1,
+        #     'Y': 3 + 0
         # }
-
-        # color_counts_C = {
-        #     'R': remaining_pieces['RC'],
-        #     'G': remaining_pieces['GC'],
-        #     'B': remaining_pieces['BC'],
-        #     'Y': remaining_pieces['YC']
-        # }
-
-        # # color_counts = {
-        # #     'R': 3 + 2,
-        # #     'G': 2 + 2,
-        # #     'B': 0 + 1,
-        # #     'Y': 3 + 0
-        # # }
-        # avg_pieces = sum(color_counts_R.values()) / len(color_counts_R)
-        # imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_R.values())
+        avg_pieces = sum(color_counts_R.values()) / len(color_counts_R)
+        imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_R.values())
 
 
-        # value += 2 / (imbalance_penalty/2 + 1)
+        value += 2 / (imbalance_penalty/2 + 1)
 
-        # avg_pieces = sum(color_counts_C.values()) / len(color_counts_C)
-        # imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_C.values())
+        avg_pieces = sum(color_counts_C.values()) / len(color_counts_C)
+        imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_C.values())
 
-        # value += 2 / (imbalance_penalty/2 + 1)
+        value += 2 / (imbalance_penalty/2 + 1)
 
-        # remaining_pieces[action.data['piece']] += 1 # restore the state
+        remaining_pieces[action.data['piece']] += 1 # restore the state
 
         return value
 
@@ -278,14 +274,13 @@ class MyPlayer(PlayerDivercite):
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbors.values() if isinstance(n[0], Piece)]
 
         if len(set(neighbor_piece_colors).union(set([piece_color]))) == 4:
-            return 6
+            return 4 # reduire
         
-        # TODO check if has the need remaining pieces for state_heuristic
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color) 
         
-        if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):# and has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[playerId]):
-            return len(neighbor_piece_colors) + 1
+        if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors) and self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
+            return len(neighbor_piece_colors)
         else:
             return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]])
         
@@ -295,17 +290,17 @@ class MyPlayer(PlayerDivercite):
         neighbors = state.rep.get_neighbours(city_pos[0], city_pos[1])
 
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbors.values() if isinstance(n[0], Piece)]
-        if len(neighbor_piece_colors) < 3 or len(neighbor_piece_colors) != len(set(neighbor_piece_colors)):
+        if len(neighbor_piece_colors) < 3 or len(neighbor_piece_colors) != len(set(neighbor_piece_colors)) or not self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
             return 0
         
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color)
             
         if len(neighbor_piece_colors) == 4 and len(set(neighbor_piece_colors)) != 4:
-            return 8
+            return 6
         
-        # if len(neighbor_piece_colors) == 3 and len(set(neighbor_piece_colors)) != 3:
-        #     return 1
+        if len(neighbor_piece_colors) == 3 and len(set(neighbor_piece_colors)) != 3:
+            return 2
         return 0
 
 
@@ -313,6 +308,19 @@ class MyPlayer(PlayerDivercite):
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbours.values() if isinstance(n[0], Piece)]
 
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
-            return len(set(neighbor_piece_colors)) + 1
+            return len(set(neighbor_piece_colors))
         else:
             return sum(1 for color in neighbor_piece_colors if color == city_color)
+        
+    def has_needed_pieces(self, current_pieces_colors: list[str], remaining_pieces: dict[str, int]) -> bool:
+        needed_color = []
+        for color in ['R', 'G', 'B', 'Y']:
+            if color not in current_pieces_colors:
+                needed_color.append(color)
+            
+        return all(remaining_pieces[color+'R'] > 0 for color in needed_color)
+
+if __name__ == "__main__":
+    player = MyPlayer("W", "Test")
+
+    print(player.has_needed_pieces(['R', 'G'], {'RR': 3, 'RC': 3, 'GR': 3, 'GC': 3, 'BR': 0, 'BC': 0, 'YR': 1, 'YC': 3}))
