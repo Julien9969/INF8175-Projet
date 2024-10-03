@@ -9,6 +9,7 @@ import sys, time, threading
 
 DIR = "./Divercite"
 ENV = "INF8175"
+
 # agent1_name = "greedy_player_divercite.py" #"2000.py"
 # agent2_name = "greedy_player_divercite.py" #findus200v2.py"
 
@@ -40,6 +41,7 @@ def live_elapsed_time(start_time):
 
 def play_game(agent1: str, agent2: str, i: int, port):
     command = f"cmd /c \"cd {DIR} && conda activate {ENV} && python main_divercite.py -t local {agent1} {agent2} -g -p {port}\""
+    print(f"Start Game {i} - {agent1} vs {agent2} on port {port}")
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="cp437")
     
     output = result.stdout.splitlines()[::-1]
@@ -59,9 +61,10 @@ def play_game(agent1: str, agent2: str, i: int, port):
             agent1_score = (line.split(':')[-1].strip())
         elif f'Player now playing :' in line:
             time_info = (output[j-1].split(':')[-1].strip())
-            if f'{agent1.replace(".py", "")}_1' in line and agent2_time is None:
+            print(time_info)
+            if f'{agent1.replace(".py", "")}_1' in line and agent1_time is None:
                 agent1_time = time_info
-            elif f'{agent2.replace(".py", "")}_2' in line and agent1_time is None:
+            elif f'{agent2.replace(".py", "")}_2' in line and agent2_time is None:
                 agent2_time = time_info
 
         if agent1_score is not None and agent2_score is not None and winner is not None and agent1_time is not None and agent2_time is not None:
@@ -113,9 +116,9 @@ def display_results(results: list[GameResult]):
         table.add_row(
             str(result.i),
             Text(f"{result.agent1} : {result.score1}", style=agent1_style) if result.score1 is not None else "N/A",
-            Text(str(result.time1[:5]), style=agent1_style) if result.time1 is not None else "N/A",
+            str(result.time1[:5]) if result.time1 is not None else "N/A",
             Text(f"{result.agent2} : {result.score2}", style=agent2_style) if result.score2 is not None else "N/A",
-            Text(str(result.time2[:5]), style=agent2_style) if result.time2 is not None else "N/A",
+            str(result.time2[:5]) if result.time2 is not None else "N/A",
         )
         win_counter[result.winner] += 1
 
