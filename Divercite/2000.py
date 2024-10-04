@@ -31,7 +31,9 @@ class MyPlayer(PlayerDivercite):
         """
         super().__init__(piece_type, name)
         self.open: list[LightAction] = [LightAction({"piece": "RC", "position": (6, 5)}), LightAction({"piece": "BC", "position": (5, 6)})]#, LightAction({"piece": "BR", "position": (6, 6)}), LightAction({"piece": "RR", "position": (5, 5)})]
-    
+        self.is_start_player = False
+
+
     def compute_action(self, current_state: GameStateDivercite, remaining_time: int = 1e9, **kwargs) -> Action:
         """
         Use the minimax algorithm to choose the best action based on the heuristic evaluation of game states.
@@ -47,22 +49,26 @@ class MyPlayer(PlayerDivercite):
         self.remaining_time = remaining_time
         self.opponent_id = [key for key in current_state.scores if key != self.get_id()][0]
 
-        if all((value == 2 if key.endswith('C') else value == 3) for key, value in current_state.players_pieces_left[self.get_id()].items()):
-            possible_actions = [
-                d for d in current_state.generate_possible_heavy_actions()
-                if any('C' in key and value < 2 for key, value in d.next_game_state.players_pieces_left[self.get_id()].items())
-            ]
+        # if all((value == 2 if key.endswith('C') else value == 3) for key, value in current_state.players_pieces_left[self.get_id()].items()):
+        # if len(current_state.rep.env.items()) == 0:
+        #     possible_actions = [
+        #         d for d in current_state.generate_possible_heavy_actions()
+        #         if any('C' in key and value < 2 for key, value in d.next_game_state.players_pieces_left[self.get_id()].items())
+        #     ]
 
-            first_action_play_city = random.choice(possible_actions)
-
-            return first_action_play_city
-        # if len(self.open) > 0:
-        #     fist_action = self.open.pop(0)
-        #     while not current_state.check_action(fist_action) and len(self.open) > 0:
-        #         fist_action = self.open.pop(0)
+        #     first_action_play_city = random.choice(possible_actions)
+        #     print("First action: ", first_action_play_city)
+        #     return first_action_play_city
+        if len(current_state.rep.env.items()) == 0:
+            self.is_start_player = True
+        
+        if self.is_start_player and len(self.open) > 0:
+            fist_action = self.open.pop(0)
+            while not current_state.check_action(fist_action) and len(self.open) > 0:
+                fist_action = self.open.pop(0)
             
-        #     if current_state.check_action(fist_action):
-        #         return fist_action.get_heavy_action(current_state)
+            if current_state.check_action(fist_action):
+                return fist_action.get_heavy_action(current_state)
 
         depth = self.depth_depend_on_actions(len(self.filter_actions(current_state)))
         print("Depth: ", depth)
@@ -71,6 +77,7 @@ class MyPlayer(PlayerDivercite):
 
 
     def depth_depend_on_actions(self, length: list) -> int:
+        # print(length)
         if (self.remaining_time - (time.time() - self.start_time)) < 80: 
             return 3
         if length < 6:
@@ -184,7 +191,7 @@ class MyPlayer(PlayerDivercite):
             return [(action, 1) for action in actions]
 
         filtered_actions = sorted(actions_with_heuristics, key=lambda x: x[1], reverse=True)
-        return filtered_actions[:min(len(filtered_actions)//3, 25)] if len(filtered_actions) > 20 else filtered_actions
+        return filtered_actions[:min(len(filtered_actions)//2, 50)] if len(filtered_actions) > 25 else filtered_actions
    
 
     def state_heuristic(self, state: GameStateDivercite, ligth_action_heur: int = 0) -> int:
