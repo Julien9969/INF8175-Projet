@@ -3,6 +3,8 @@ __REC__*
 game_*.txt
 # Abyss Zip
 *.zip
+*.gdoc
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
