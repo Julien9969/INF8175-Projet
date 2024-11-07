@@ -11,6 +11,65 @@ from game_state_divercite import BoardDivercite
 
 
 import math, random, time
+import sys, json
+
+
+# Filter Action
+THRESHOLD = 25
+LEN_DIVIDE = 2
+MAX_ACTIONS = 50
+
+# State Heuristic
+OPPONENT_SCORE_MULT = 1
+
+# Action Heuristic
+SELF_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on a city
+OPPONENT_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on an opponent city
+RESSOURCE_BALANCE = 2 # base value for the balance of the ressources pieces
+CITY_BALANCE = 2 # base value for the balance of the cities pieces
+
+# Evaluate my city
+DIVERSITY_SCORE = 6 # score for a diversity
+STILL_POSSIBLE_DIVERSITY_MULT = 1 # score for a diversity that is still possible
+SCORE_FOR_COLOR_MULT = 1 # mult the score for a color around a city 
+
+# Evaluate opponent city
+CANCEL_DIVERSITY_SCORE = 4 # score for a diversity that is canceled
+CANCEL_IN_PROGRESS_DIVERSITY_SCORE = 1 # score for a diversity that is canceled in progress
+NOT_COMPLETABLE_DIVERSITY_SCORE = 0
+BONUS_CANCEL_WITH_OTHER_COL = 1
+
+# City heuristic
+NEAR_OPPONENT_CITY_SCORE = 1
+DIFFERENT_COLOR_CITY_BONUS = 2
+IN_PROGRESS_DIVERSITY_MULT = 1
+CITY_COLOR_SCORE = 1
+
+
+def load_testing_set():
+    global THRESHOLD, LEN_DIVIDE, MAX_ACTIONS, SELF_CITY_GAIN_MULT, OPPONENT_CITY_GAIN_MULT, RESSOURCE_BALANCE, CITY_BALANCE, DIVERSITY_SCORE, STILL_POSSIBLE_DIVERSITY_MULT, SCORE_FOR_COLOR_MULT, CANCEL_DIVERSITY_SCORE, CANCEL_IN_PROGRESS_DIVERSITY_SCORE, NOT_COMPLETABLE_DIVERSITY_SCORE, BONUS_CANCEL_WITH_OTHER_COL, NEAR_OPPONENT_CITY_SCORE, DIFFERENT_COLOR_CITY_BONUS, IN_PROGRESS_DIVERSITY_MULT, CITY_COLOR_SCORE
+
+    params_dict = json.loads(sys.argv[4])
+
+    THRESHOLD = params_dict["THRESHOLD"]
+    LEN_DIVIDE = params_dict["LEN_DIVIDE"]
+    MAX_ACTIONS = params_dict["MAX_ACTIONS"]
+    SELF_CITY_GAIN_MULT = params_dict["SELF_CITY_GAIN_MULT"]
+    OPPONENT_CITY_GAIN_MULT = params_dict["OPPONENT_CITY_GAIN_MULT"]
+    RESSOURCE_BALANCE = params_dict["RESSOURCE_BALANCE"]
+    CITY_BALANCE = params_dict["CITY_BALANCE"]
+    DIVERSITY_SCORE = params_dict["DIVERSITY_SCORE"]
+    STILL_POSSIBLE_DIVERSITY_MULT = params_dict["STILL_POSSIBLE_DIVERSITY_MULT"]
+    SCORE_FOR_COLOR_MULT = params_dict["SCORE_FOR_COLOR_MULT"]
+    CANCEL_DIVERSITY_SCORE = params_dict["CANCEL_DIVERSITY_SCORE"]
+    CANCEL_IN_PROGRESS_DIVERSITY_SCORE = params_dict["CANCEL_IN_PROGRESS_DIVERSITY_SCORE"]
+    NOT_COMPLETABLE_DIVERSITY_SCORE = params_dict["NOT_COMPLETABLE_DIVERSITY_SCORE"]
+    BONUS_CANCEL_WITH_OTHER_COL = params_dict["BONUS_CANCEL_WITH_OTHER_COL"]
+    NEAR_OPPONENT_CITY_SCORE = params_dict["NEAR_OPPONENT_CITY_SCORE"]
+    DIFFERENT_COLOR_CITY_BONUS = params_dict["DIFFERENT_COLOR_CITY_BONUS"]
+    IN_PROGRESS_DIVERSITY_MULT = params_dict["IN_PROGRESS_DIVERSITY_MULT"]
+    CITY_COLOR_SCORE = params_dict["CITY_COLOR_SCORE"]
+
 
 
 class logActionHeuristic:
@@ -236,7 +295,7 @@ class MyPlayer(PlayerDivercite):
             return [(action, 1) for action in actions]
 
         filtered_actions = sorted(actions_with_heuristics, key=lambda x: x[1], reverse=True)
-        return filtered_actions[:min(len(filtered_actions)//2, 50)] if len(filtered_actions) > 25 else filtered_actions
+        return filtered_actions[:min(len(filtered_actions)//LEN_DIVIDE, MAX_ACTIONS)] if len(filtered_actions) > THRESHOLD else filtered_actions
    
 
     def state_heuristic(self, state: GameStateDivercite, ligth_action_heur: int = 0) -> int:
@@ -255,8 +314,8 @@ class MyPlayer(PlayerDivercite):
                 if piece.get_type()[1] == 'C':
                     if piece.owner_id == player_id:
                         score += self.evaluate_my_city((piece, pos), state, log=log_state_me)
-                        opponent_score += self.evaluate_opponent_city((piece, pos), state, log=log_state_me)
                         score += self.city_heuristic(state, {"piece": piece.get_type(), "position": pos}, player_id)
+                        opponent_score += self.evaluate_opponent_city((piece, pos), state, log=log_state_me)
                     else:
                         score += self.evaluate_opponent_city((piece, pos), state, log=log_state_op)
                         opponent_score += self.evaluate_my_city((piece, pos), state, log=log_state_op)
@@ -264,7 +323,7 @@ class MyPlayer(PlayerDivercite):
 
         state.log_heuristic_me = log_state_me
         state.log_heuristic_op = log_state_op
-        return score - opponent_score#*1.5 #* 1.5# * 0.6
+        return score - opponent_score * OPPONENT_SCORE_MULT#*1.5 #* 1.5# * 0.6
 
 
     # try to uniformize the usage of pice by color
@@ -287,13 +346,13 @@ class MyPlayer(PlayerDivercite):
                 if neighbor_piece[0].piece_type[1] == 'C':  
                     if neighbor_piece[0].owner_id == player_id:
                         temp = self.evaluate_my_city(neighbor_piece, state, action.data['piece'][0]) - self.evaluate_my_city(neighbor_piece, state)
-                        value += temp*1.5
+                        value += temp * SELF_CITY_GAIN_MULT if temp > 0 else 0
                         if previous_h == -1:
                             action.log_heuristic.action_my_city += temp
                     else:
                         # value += self.evaluate_opponent_city(neighbor_piece, state, action.data['piece'][0])
                         temp = self.evaluate_opponent_city(neighbor_piece, state, action.data['piece'][0]) - self.evaluate_opponent_city(neighbor_piece, state)
-                        value += temp*1.5
+                        value += temp * OPPONENT_CITY_GAIN_MULT if temp > 0 else 0
                         if previous_h == -1:
                             action.log_heuristic.action_opponent_city += temp
             
@@ -328,7 +387,7 @@ class MyPlayer(PlayerDivercite):
         avg_pieces = sum(color_counts_R.values()) / len(color_counts_R)
         imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_R.values())
 
-        value += 2 / (imbalance_penalty/2 + 1)
+        value += RESSOURCE_BALANCE / (imbalance_penalty/2 + 1)
         
         if previous_h == -1:
             action.log_heuristic.balance_R = 2 / (imbalance_penalty/2 + 1)
@@ -336,7 +395,7 @@ class MyPlayer(PlayerDivercite):
         avg_pieces = sum(color_counts_C.values()) / len(color_counts_C)
         imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_C.values())
 
-        value += 2 / (imbalance_penalty/2 + 1)
+        value += CITY_BALANCE / (imbalance_penalty/2 + 1)
 
         if previous_h == -1:
             action.log_heuristic.balance_C = 2 / (imbalance_penalty/2 + 1)
@@ -358,25 +417,25 @@ class MyPlayer(PlayerDivercite):
         # I do a diversity
         if len(set(neighbor_piece_colors)) == 4:
             if log:
-                log.my_city += 6
+                log.my_city += DIVERSITY_SCORE
                 log.diversity_count += 1
 
-            return 6 
+            return DIVERSITY_SCORE 
         
         # Diversity is still possible
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors) and self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
             if log:
-                log.my_city += len(neighbor_piece_colors) + (1 if len(neighbor_piece_colors) == 3 else 0)
+                log.my_city += STILL_POSSIBLE_DIVERSITY_MULT * len(neighbor_piece_colors)# + (1 if len(neighbor_piece_colors) == 3 else 0)
                 log.almost_diversity_count += 1
             # return len(neighbor_piece_colors) + (1 if len(neighbor_piece_colors) == 3 else 0)
-            return 1 #+ 1 if piece_color != city[0].get_type()[0] else 0
+            return STILL_POSSIBLE_DIVERSITY_MULT * len(neighbor_piece_colors) #+ 1 if piece_color != city[0].get_type()[0] else 0
         else:
             if log:
-                log.my_city += len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]])
+                log.my_city += len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]]) * SCORE_FOR_COLOR_MULT
                 log.only_color += 1
             
             # else color points
-            return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]]) * 1.5
+            return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]]) * SCORE_FOR_COLOR_MULT
         
 
     def evaluate_opponent_city(self, city: tuple[Piece, tuple[int, int]], state: GameStateDivercite, piece_color=None, log=None) -> int:
@@ -385,9 +444,9 @@ class MyPlayer(PlayerDivercite):
 
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbors.values() if isinstance(n[0], Piece)]
         if len(neighbor_piece_colors) == len(set(neighbor_piece_colors)) and not self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
-            if log: # naze
+            if log:
                 log.not_completable_diversity += 1
-            return 0
+            return NOT_COMPLETABLE_DIVERSITY_SCORE
         
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color)
@@ -397,16 +456,16 @@ class MyPlayer(PlayerDivercite):
             if log:
                 log.opponent_city += 6
                 log.opponent_diversity_count += 1
-            return 3
+            return CANCEL_DIVERSITY_SCORE
         
         # Cancel in progress opponent diversity is good for me
         if len(neighbor_piece_colors) == 3 and len(set(neighbor_piece_colors)) != 3:
             if log:
                 log.opponent_city += 3
                 log.almost_opponent_diversity_count += 1
-            return 1 + 1 if piece_color != city[0].get_type()[0] else 0
+            return CANCEL_IN_PROGRESS_DIVERSITY_SCORE + BONUS_CANCEL_WITH_OTHER_COL if piece_color != city[0].get_type()[0] else 0
         
-        return 0#len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]]) 
+        return 0
 
 
     def city_heuristic(self, state: GameStateDivercite, piece: dict[str, tuple|str], player_id: str) -> int:
@@ -420,14 +479,14 @@ class MyPlayer(PlayerDivercite):
             if neighbours_city is None:
                 continue
             if neighbours_city.piece_type[1] == 'C' and neighbours_city.owner_id != player_id:
-                near_opponent += 1 + 2 if neighbours_city.piece_type[0] != city_color else 0
+                near_opponent += NEAR_OPPONENT_CITY_SCORE + DIFFERENT_COLOR_CITY_BONUS if neighbours_city.piece_type[0] != city_color else 0
 
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbours.values() if isinstance(n[0], Piece)]
 
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
-            return len(set(neighbor_piece_colors)) + (1 if len(neighbor_piece_colors) == 3 else 0) + near_opponent
+            return len(set(neighbor_piece_colors)) * IN_PROGRESS_DIVERSITY_MULT + near_opponent # (1 if len(neighbor_piece_colors) == 3 else 0)
         else:
-            return sum(1 for color in neighbor_piece_colors if color == city_color) + near_opponent
+            return sum(CITY_COLOR_SCORE for color in neighbor_piece_colors if color == city_color) + near_opponent
         
 
     def get_neighbours_city(self, x, y, state: GameStateDivercite) -> dict[str, None|Piece]:
