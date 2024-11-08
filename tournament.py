@@ -1,7 +1,7 @@
 import concurrent.futures
 import subprocess, json
 import os, logging
-import random, sys
+import random, sys, time
 import numpy as np
 from datetime import datetime
 
@@ -22,14 +22,16 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 # Constants
-INITIAL_SET_SIZE = 500  
+INITIAL_SET_SIZE = 15  
 LIVES = 3  
 SAVE_FILE = "testing_configurations.json"  
 DIR = "./Divercite"
 ENV = "INF8175"
-SHELL = "zsh"
+SHELL = "bash"
 
 AGENT_FILES = ["charalv3.py", "charalv3_2.py"] # SAME AGENT but will retrieve different parameters
+
+# AGENT_FILES = ["greedy_player_divercite.py", "greedy_player_divercite.py"]
 
 # Parameter ranges with (start, stop, step)
 PARAM_RANGES = {
@@ -51,7 +53,8 @@ PARAM_RANGES = {
     "NEAR_OPPONENT_CITY_SCORE": (0.5, 2, 0.5), # 4 values
     "DIFFERENT_COLOR_CITY_BONUS": (0.5, 2, 0.5), # 4 values
     "IN_PROGRESS_DIVERSITY_MULT": (0.5, 2, 0.5), # 4 values
-    "CITY_COLOR_SCORE": (0.5, 2, 0.5) # 4 values
+    "CITY_COLOR_SCORE": (0.5, 2, 0.5), # 4 values
+    "DIV_CITY_HEUR": (0.5, 2, 0.5), # 4 values
 }
 
 def generate_param_values():
@@ -61,7 +64,7 @@ def generate_param_values():
     return param_values
 
 
-def initialize_testing_set(size):
+def initialize_testing_set(size) -> list[dict]:
     param_values = generate_param_values()
     testing_set = []
 
@@ -85,24 +88,29 @@ def load_testing_set():
         return initialize_testing_set(INITIAL_SET_SIZE)
 
 
-def evaluate_agent(config1, config2) -> list[tuple[int, int]]:
-    agent1_params = config1["params"]
-    agent2_params = config2["params"]
-    port = 20000 + config1["id"] 
+def evaluate_agent(config1, config2, p=1) -> list[tuple[int, int]]:
+    agent1_params = json.dumps(config1["params"]).replace('"', '\\"')
+    agent2_params = json.dumps(config2["params"]).replace('"', '\\"')
+
+    port = 20000 + p
 
     if sys.platform == "win32":
         command = (
             f"cmd /c \"cd {DIR} && conda activate {ENV} && "
-            f"python main_divercite.py -t local {AGENT_FILES[0]} {AGENT_FILES[1]} -g -p {port} '{agent1_params}' '{agent2_params}'\""
+            f"python main_divercite_custom.py -t local {AGENT_FILES[0]} {AGENT_FILES[1]} -g -p {port} "
+            f"\"{agent1_params}\" \"{agent2_params}\"\""
         )
     else:
         command = (
-            f"{SHELL} -c \"cd {DIR} && source ~/.{SHELL}rc && conda activate {ENV} && "
-            f"python main_divercite.py -t local {AGENT_FILES[0]} {AGENT_FILES[1]} -g -p {port} '{agent1_params}' '{agent2_params}'\""
+            f"{SHELL} -c \"cd {DIR} && source ~/.{SHELL}rc && source ~/miniconda3/etc/profile.d/conda.sh && conda activate {ENV} && "
+            f"python main_divercite_custom.py -t local {AGENT_FILES[0]} {AGENT_FILES[1]} -g -p {port} "
+            f"'{agent1_params}' '{agent2_params}'\""
         )
 
-    process_file = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{config1['id']}_vs_{config2['id']}.txt"
-    with open(process_file, "w") as file:
+    logger.info(f"Running command: {command}")
+
+    process_file = f"./matches_logs/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{config1['id']}_vs_{config2['id']}.txt"
+    with open(process_file, "w", encoding="cp437") as file:
         result = subprocess.run(
             command,
             shell=True,
@@ -112,13 +120,43 @@ def evaluate_agent(config1, config2) -> list[tuple[int, int]]:
             encoding="cp437"
         )
 
-    with open(process_file, "r") as file:
-        output = file.readlines().reverse()
+    # time.sleep(1)
 
+    with open(process_file, "r", encoding="cp437") as file:
+        output = file.readlines()
+        output.reverse()
+        if not output:
+            logger.error(f"Error in match between {config1['id']} and {config2['id']}: no output")
+            return -1
 
-    logger.info(f"Match between {config1['id']} and {config2['id']} done. Winner: {winner_id}")
+        err = winner = agent1_score = agent2_score = agent1_time = agent2_time = None
 
-    # Parse the output to get the winner and the score
+        for j, line in enumerate(output):
+            if "ERROR" in line:
+                err = line
+            if 'Winner -' in line:
+                winner = line.split()[-1]
+            elif f'{AGENT_FILES[0].replace(".py", "")}_1:' in line and agent1_score is None:
+                agent1_score = (line.split(':')[-1].strip())
+            elif f'{AGENT_FILES[1].replace(".py", "")}_2:' in line and agent2_score is None:
+                agent2_score = (line.split(':')[-1].strip())
+            elif f'Player now playing :' in line:
+                time_info = (output[j-1].split(':')[-1].strip())
+                if f'{AGENT_FILES[0].replace(".py", "")}_1' in line and agent1_time is None:
+                    agent1_time = time_info
+                elif f'{AGENT_FILES[1].replace(".py", "")}_2' in line and agent2_time is None:
+                    agent2_time = time_info
+
+            if agent1_score and agent2_score and agent1_time and agent2_time and winner:
+                break
+
+    if err:
+        logger.error(f"Error in match between {config1['id']} and {config2['id']}: {err}")
+        return -1
+
+    winner_id = config1["id"] if winner == AGENT_FILES[0] else config2["id"]
+    logger.info(f"Match between {config1['id']}:{agent1_score} and {config2['id']}:{agent2_score}, Time: {agent1_time}-{agent2_time}")
+
     return winner_id
 
 
@@ -133,7 +171,7 @@ def run_tournament(testing_set):
             batch += random.sample(testing_set, 16 - len(batch))
         
         with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
-            futures = {executor.submit(evaluate_agent, batch[i], batch[i+1]): (batch[i], batch[i+1]) for i in range(0, len(batch), 2)}
+            futures = {executor.submit(evaluate_agent, batch[i], batch[i+1], i): (batch[i], batch[i+1]) for i in range(0, len(batch), 2)}
 
             for future in concurrent.futures.as_completed(futures):
                 config1, config2 = futures[future]
@@ -149,15 +187,35 @@ def run_tournament(testing_set):
                     config2["matches"] += 1
 
                 except Exception as exc:
-                    print(f'Generated an exception: {exc}')
+                    logger.error(f'future exception: {exc}')
 
         testing_set = [config for config in testing_set if config["lives"] > 0]
 
         min_matches_done = min([config["matches"] for config in testing_set])
+
+        logger.info(f"Batch done, Testing set size: {len(testing_set)}")    
         save_testing_set(testing_set)
+
+
+def test_run():
+    b = initialize_testing_set(2)
+    # logger.info(b)
+
+    evaluate_agent(b[0], b[1])
+
+
 
 
 if __name__ == "__main__":
 
-    testing_set = load_testing_set()
-    run_tournament(testing_set)
+    if not os.path.exists(DIR):
+        logger.error(f"Directory {DIR} does not exist")
+        sys.exit(1)
+    
+    if not os.path.exists(f"matches_logs"):
+        os.makedirs(f"matches_logs")
+
+    test_run()
+
+    # testing_set = load_testing_set()
+    # run_tournament(testing_set)
