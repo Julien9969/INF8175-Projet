@@ -30,6 +30,7 @@ class MyPlayer(PlayerDivercite):
             time_limit (float, optional): the time limit in (s)
         """
         super().__init__(piece_type, name)
+        self.open: list[LightAction] = [LightAction({"piece": "RC", "position": (6, 5)}), LightAction({"piece": "BC", "position": (5, 6)}), LightAction({"piece": "BR", "position": (6, 6)}), LightAction({"piece": "RR", "position": (5, 5)})]
 
     def compute_action(self, current_state: GameStateDivercite, remaining_time: int = 1e9, **kwargs) -> Action:
         """
@@ -52,22 +53,31 @@ class MyPlayer(PlayerDivercite):
             first_action_play_city = random.choice(possible_actions)
 
             return first_action_play_city
-        
+        # if len(self.open) > 0:
+        #     fist_action = self.open.pop(0)
+        #     while not current_state.check_action(fist_action) and len(self.open) > 0:
+        #         fist_action = self.open.pop(0)
+            
+        #     if current_state.check_action(fist_action):
+        #         return fist_action.get_heavy_action(current_state)
+            
+
         depth = self.depth_depend_on_actions(len(self.filter_actions(current_state)), remaining_time)
+        print("Depth: ", depth)
         action = self.alpha_beta_search(current_state, depth)
         return action
 
 
     def depth_depend_on_actions(self, length: list, remaining_time: int = 1e9) -> int:
-        if remaining_time < 100: 
+        if remaining_time < 150: 
             return 3
         if length < 10:
-            return 9
+            return 8
         if length < 12:
             return 7
-        if length < 20:
+        if length < 23:
             return 6
-        if length < 45:
+        if length < 42:
             return 5
         if length < 80:
             return 4
