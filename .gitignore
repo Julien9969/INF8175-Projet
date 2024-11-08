@@ -6,6 +6,7 @@ game_*.txt
 *.gdoc
 .vscode/
 
+matches_logs/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
