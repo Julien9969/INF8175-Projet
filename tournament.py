@@ -22,7 +22,14 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 # Constants
-INITIAL_SET_SIZE = 15  
+INITIAL_SET_SIZE = 394  
+
+# 4j = 4 * 24 * 60 = 5760 min
+# 30 min per match
+# 3 défaites par config
+# 6 match en mm temps => 6 défaites par batch
+# x = 6 * 5760 / (30 * 3) = 384 config + 10 car on en garde 10 a la fin
+
 LIVES = 3  
 SAVE_FILE = "testing_configurations.json"  
 DIR = "./Divercite"
@@ -67,11 +74,18 @@ def generate_param_values():
 def initialize_testing_set(size) -> list[dict]:
     param_values = generate_param_values()
     testing_set = []
+    i = 0
 
-    for i in range(size):
+    while i < (size):
         params = {param: random.choice(values) for param, values in param_values.items()}
+
+        if params in [config["params"] for config in testing_set]:
+            continue
+
         testing_set.append({"id":i, "params": params, "lives": LIVES, "matches": 0})
-    
+        i += 1
+
+    save_testing_set(testing_set)
     return testing_set
 
 
@@ -107,7 +121,7 @@ def evaluate_agent(config1, config2, p=1) -> list[tuple[int, int]]:
             f"'{agent1_params}' '{agent2_params}'\""
         )
 
-    logger.info(f"Running command: {command}")
+    # logger.info(f"Running command: {command}")
 
     process_file = f"./matches_logs/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{config1['id']}_vs_{config2['id']}.txt"
     with open(process_file, "w", encoding="cp437") as file:
@@ -154,6 +168,10 @@ def evaluate_agent(config1, config2, p=1) -> list[tuple[int, int]]:
         logger.error(f"Error in match between {config1['id']} and {config2['id']}: {err}")
         return -1
 
+    # if "-" in agent1_score or "-" in agent2_score: # negative score
+    #     logger.error(f"Error in match between {config1['id']} and {config2['id']}: timeout")
+    #     return -1
+
     winner_id = config1["id"] if winner == AGENT_FILES[0] else config2["id"]
     logger.info(f"Match between {config1['id']}:{agent1_score} and {config2['id']}:{agent2_score}, Time: {agent1_time}-{agent2_time}")
 
@@ -166,9 +184,9 @@ def run_tournament(testing_set):
     while len(testing_set) > 10:
 
         filtered_testing_set = [config for config in testing_set if config["matches"] == min_matches_done]
-        batch = random.sample(filtered_testing_set, min(16, len(filtered_testing_set)))
-        if len(batch) < 16:
-            batch += random.sample(testing_set, 16 - len(batch))
+        batch = random.sample(filtered_testing_set, min(12, len(filtered_testing_set)))
+        if len(batch) < 12:
+            batch += random.sample(testing_set, 12 - len(batch))
         
         with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
             futures = {executor.submit(evaluate_agent, batch[i], batch[i+1], i): (batch[i], batch[i+1]) for i in range(0, len(batch), 2)}
