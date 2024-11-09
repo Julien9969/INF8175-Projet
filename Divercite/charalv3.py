@@ -15,45 +15,48 @@ import sys, json
 
 
 # Filter Action
-THRESHOLD = 25
-LEN_DIVIDE = 2
-MAX_ACTIONS = 50
+# THRESHOLD = 25
+# LEN_DIVIDE = 2
+# MAX_ACTIONS = 50
 
-# State Heuristic
-OPPONENT_SCORE_MULT = 1
-DIV_CITY_HEUR = 2
+# # State Heuristic
+# OPPONENT_SCORE_MULT = 1
+# DIV_CITY_HEUR = 2
 
-# Action Heuristic
-SELF_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on a city
-OPPONENT_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on an opponent city
-RESSOURCE_BALANCE = 2 # base value for the balance of the ressources pieces
-CITY_BALANCE = 2 # base value for the balance of the cities pieces
+# # Action Heuristic
+# SELF_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on a city
+# OPPONENT_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on an opponent city
+# RESSOURCE_BALANCE = 2 # base value for the balance of the ressources pieces
+# CITY_BALANCE = 2 # base value for the balance of the cities pieces
 
-# Evaluate my city
-DIVERSITY_SCORE = 6 # score for a diversity
-STILL_POSSIBLE_DIVERSITY_MULT = 1 # score for a diversity that is still possible
-SCORE_FOR_COLOR_MULT = 1 # mult the score for a color around a city 
+# # Evaluate my city
+# DIVERSITY_SCORE = 6 # score for a diversity
+# STILL_POSSIBLE_DIVERSITY_MULT = 1 # score for a diversity that is still possible
+# SCORE_FOR_COLOR_MULT = 1 # mult the score for a color around a city 
 
-# Evaluate opponent city
-CANCEL_DIVERSITY_SCORE = 4 # score for a diversity that is canceled
-CANCEL_IN_PROGRESS_DIVERSITY_SCORE = 2 # score for a diversity that is canceled in progress
-NOT_COMPLETABLE_DIVERSITY_SCORE = 0
-BONUS_CANCEL_WITH_OTHER_COL = 1
+# # Evaluate opponent city
+# CANCEL_DIVERSITY_SCORE = 4 # score for a diversity that is canceled
+# CANCEL_IN_PROGRESS_DIVERSITY_SCORE = 2 # score for a diversity that is canceled in progress
+# NOT_COMPLETABLE_DIVERSITY_SCORE = 0
+# BONUS_CANCEL_WITH_OTHER_COL = 1
 
-# City heuristic
-NEAR_OPPONENT_CITY_SCORE = 1
-DIFFERENT_COLOR_CITY_BONUS = 2
-IN_PROGRESS_DIVERSITY_MULT = 1
-CITY_COLOR_SCORE = 1
+# # City heuristic
+# NEAR_OPPONENT_CITY_SCORE = 1
+# DIFFERENT_COLOR_CITY_BONUS = 2
+# IN_PROGRESS_DIVERSITY_MULT = 1
+# CITY_COLOR_SCORE = 1
+
+THRESHOLD = LEN_DIVIDE = MAX_ACTIONS = OPPONENT_SCORE_MULT = SELF_CITY_GAIN_MULT = OPPONENT_CITY_GAIN_MULT = RESSOURCE_BALANCE = CITY_BALANCE = DIVERSITY_SCORE = STILL_POSSIBLE_DIVERSITY_MULT = SCORE_FOR_COLOR_MULT = CANCEL_DIVERSITY_SCORE = CANCEL_IN_PROGRESS_DIVERSITY_SCORE = NOT_COMPLETABLE_DIVERSITY_SCORE = BONUS_CANCEL_WITH_OTHER_COL = NEAR_OPPONENT_CITY_SCORE = DIFFERENT_COLOR_CITY_BONUS = IN_PROGRESS_DIVERSITY_MULT = CITY_COLOR_SCORE = DIV_CITY_HEUR = None
 
 def load_testing_set():
-    global THRESHOLD, LEN_DIVIDE, MAX_ACTIONS, SELF_CITY_GAIN_MULT, OPPONENT_CITY_GAIN_MULT, RESSOURCE_BALANCE, CITY_BALANCE, DIVERSITY_SCORE, STILL_POSSIBLE_DIVERSITY_MULT, SCORE_FOR_COLOR_MULT, CANCEL_DIVERSITY_SCORE, CANCEL_IN_PROGRESS_DIVERSITY_SCORE, NOT_COMPLETABLE_DIVERSITY_SCORE, BONUS_CANCEL_WITH_OTHER_COL, NEAR_OPPONENT_CITY_SCORE, DIFFERENT_COLOR_CITY_BONUS, IN_PROGRESS_DIVERSITY_MULT, CITY_COLOR_SCORE, DIV_CITY_HEUR
+    global THRESHOLD, LEN_DIVIDE, MAX_ACTIONS, OPPONENT_SCORE_MULT, SELF_CITY_GAIN_MULT, OPPONENT_CITY_GAIN_MULT, RESSOURCE_BALANCE, CITY_BALANCE, DIVERSITY_SCORE, STILL_POSSIBLE_DIVERSITY_MULT, SCORE_FOR_COLOR_MULT, CANCEL_DIVERSITY_SCORE, CANCEL_IN_PROGRESS_DIVERSITY_SCORE, NOT_COMPLETABLE_DIVERSITY_SCORE, BONUS_CANCEL_WITH_OTHER_COL, NEAR_OPPONENT_CITY_SCORE, DIFFERENT_COLOR_CITY_BONUS, IN_PROGRESS_DIVERSITY_MULT, CITY_COLOR_SCORE, DIV_CITY_HEUR
 
     params_dict = json.loads(sys.argv[8])
 
     THRESHOLD = params_dict["THRESHOLD"]
     LEN_DIVIDE = params_dict["LEN_DIVIDE"]
     MAX_ACTIONS = params_dict["MAX_ACTIONS"]
+    OPPONENT_SCORE_MULT = params_dict["OPPONENT_SCORE_MULT"]
     SELF_CITY_GAIN_MULT = params_dict["SELF_CITY_GAIN_MULT"]
     OPPONENT_CITY_GAIN_MULT = params_dict["OPPONENT_CITY_GAIN_MULT"]
     RESSOURCE_BALANCE = params_dict["RESSOURCE_BALANCE"]
@@ -71,7 +74,7 @@ def load_testing_set():
     CITY_COLOR_SCORE = params_dict["CITY_COLOR_SCORE"]
     DIV_CITY_HEUR = params_dict["DIV_CITY_HEUR"]
 
-# load_testing_set()
+load_testing_set()
 
 class logActionHeuristic:
     action_my_city = -1
@@ -191,8 +194,8 @@ class MyPlayer(PlayerDivercite):
         # if length < 80:
         #     return 4
         # return 3
-        # if length < 6:
-        #     return 12
+        if length < 6:
+            return 12
         if length < 10:
             return 8
         if length < 15:
