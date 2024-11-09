@@ -71,7 +71,7 @@ def load_testing_set():
     CITY_COLOR_SCORE = params_dict["CITY_COLOR_SCORE"]
     DIV_CITY_HEUR = params_dict["DIV_CITY_HEUR"]
 
-load_testing_set()
+# load_testing_set()
 
 class logActionHeuristic:
     action_my_city = -1
@@ -178,10 +178,8 @@ class MyPlayer(PlayerDivercite):
 
     def depth_depend_on_actions(self, length: list) -> int:
         # print(length)
-        if (self.remaining_time - (time.time() - self.start_time)) < 80: 
-            return 3
-        if length < 6:
-            return 12
+        # if (self.remaining_time - (time.time() - self.start_time)) < 80: 
+        #     return 3
         # if length < 11:
         #     return 9
         # if length < 13:
@@ -193,18 +191,17 @@ class MyPlayer(PlayerDivercite):
         # if length < 80:
         #     return 4
         # return 3
-        if length < 6:
-            return 12
-
+        # if length < 6:
+        #     return 12
         if length < 10:
-            return 9
+            return 8
         if length < 15:
             return 7
-        # if length < 20:
-        #     return 6
-        if length < 45:
+        if length < 18:
+            return 6
+        if length < 38:
             return 5
-        if length < 80:
+        if length < 70:
             return 4
         return 3
 

@@ -9,13 +9,13 @@ import sys, time, threading
 
 DIR = "./Divercite"
 ENV = "INF8175"
-SHELL = "zsh"
+SHELL = "bash"
 
 # agent1_name = "greedy_player_divercite.py" #"2000.py"
 # agent2_name = "greedy_player_divercite.py" #findus200v2.py"
 
-agent1_name = "findus200v2.py"
-agent2_name = "2000.py"
+agent1_name = "charalv3.py"
+agent2_name = "charalv3.py"
 
 class GameResult:
     def __init__(self, i, agent1, score1, time1, agent2, score2, time2, winner):
@@ -45,7 +45,7 @@ def play_game(agent1: str, agent2: str, i: int, port):
     if sys.platform == "win32":
         command = f"cmd /c \"cd {DIR} && conda activate {ENV} && python main_divercite.py -t local {agent1} {agent2} -g -p {port}\""
     else:
-        command = f"{SHELL} -c \"cd {DIR} && source ~/.{SHELL}rc && conda activate {ENV} && python main_divercite.py -t local {agent1} {agent2} -g -p {port}\""
+        command = f"{SHELL} -c \"cd {DIR} && source ~/.{SHELL}rc && source ~/miniconda3/etc/profile.d/conda.sh && conda activate {ENV} && python main_divercite.py -t local {agent1} {agent2} -g -p {port}\""
     
     print(f"Start Game {i} - {agent1} vs {agent2} on port {port}")
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="cp437")
@@ -81,7 +81,7 @@ def play_game(agent1: str, agent2: str, i: int, port):
 def run_simulation() -> list[GameResult]:
     results: list[GameResult] = []
     start_time = time.time()
-    n_process = 10
+    n_process = 6
 
     elapsed_time_thread = threading.Thread(target=live_elapsed_time, args=(start_time,), daemon=True)
     elapsed_time_thread.start()
@@ -89,10 +89,10 @@ def run_simulation() -> list[GameResult]:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
         
-        for i in range(5):
+        for i in range(3):
             futures.append(executor.submit(play_game, agent1_name, agent2_name, i, 16565 + i))
         
-        for i in range(5, 10):
+        for i in range(3, 6):
             futures.append(executor.submit(play_game, agent2_name, agent1_name, i, 16565 + i))
         
         for future in concurrent.futures.as_completed(futures):
@@ -131,7 +131,7 @@ def display_results(results: list[GameResult]):
     console.print(table)
 
     best_agent = win_counter.most_common(1)[0][0]
-    win_ratio = win_counter[best_agent] / 10
+    win_ratio = win_counter[best_agent] / 6
     console.print(f"\nBest Agent: {best_agent}, Win Ratio: {win_ratio:.2f}\n")
 
 
