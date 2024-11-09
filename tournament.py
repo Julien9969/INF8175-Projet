@@ -62,6 +62,8 @@ PARAM_RANGES = {
     "IN_PROGRESS_DIVERSITY_MULT": (0.5, 2, 0.5), # 4 values
     "CITY_COLOR_SCORE": (0.5, 2, 0.5), # 4 values
     "DIV_CITY_HEUR": (0.5, 2, 0.5), # 4 values
+    "NEAR_MY_CITY_SCORE": (0.5, 2, 0.5), # 4 values
+    "SAME_COLOR_CITY_BONUS": (0, 2, 1), # 3 values
 }
 
 def generate_param_values():
@@ -80,6 +82,7 @@ def initialize_testing_set(size) -> list[dict]:
         params = {param: random.choice(values) for param, values in param_values.items()}
 
         if params in [config["params"] for config in testing_set]:
+            print("Duplicate config", params)
             continue
 
         testing_set.append({"id":i, "params": params, "lives": LIVES, "matches": 0})
@@ -233,7 +236,7 @@ if __name__ == "__main__":
     if not os.path.exists(f"matches_logs"):
         os.makedirs(f"matches_logs")
 
-    test_run()
+    # test_run()
 
-    # testing_set = load_testing_set()
-    # run_tournament(testing_set)
+    testing_set = load_testing_set()
+    run_tournament(testing_set)
