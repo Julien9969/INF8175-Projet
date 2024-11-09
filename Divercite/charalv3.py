@@ -150,8 +150,8 @@ class MyPlayer(PlayerDivercite):
         #     return 3
         
         if length < 6:
-            return 12
-        if length < 10:
+            return 10
+        if length < 11:
             return 8
         if length < 15:
             return 7
@@ -184,6 +184,7 @@ class MyPlayer(PlayerDivercite):
 
         if depth == -1:
             depth = self.depth_depend_on_actions(len(actions))
+            print("Depth: ", depth)
 
         for action, act_heur in actions:
             heavy_action = action.get_heavy_action(state)
