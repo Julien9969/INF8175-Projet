@@ -220,7 +220,7 @@ class MyPlayer(PlayerDivercite):
         value = math.inf
 
         actions = self.filter_actions(state, act_heur)
-        if time.time() - self.start_time > 120:
+        if time.time() - self.start_time > 180:
             depth = min(depth, 3)
         for action, act_heur in actions:
             heavy_action = action.get_heavy_action(state)

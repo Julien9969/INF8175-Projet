@@ -186,7 +186,7 @@ class MyPlayer(PlayerDivercite):
             depth = self.depth_depend_on_actions(len(actions))
             print("Depth: ", depth)
 
-        if time.time() - self.start_time > 120:
+        if time.time() - self.start_time > 180:
             depth = min(depth, 3)
 
         for action, act_heur in actions:

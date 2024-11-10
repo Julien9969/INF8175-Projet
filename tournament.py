@@ -25,12 +25,12 @@ logger.addHandler(console_handler)
 INITIAL_SET_SIZE = 394  
 
 # 4j = 4 * 24 * 60 = 5760 min
-# 30 min per match
-# 3 défaites par config
-# 6 match en mm temps => 6 défaites par batch
-# x = 6 * 5760 / (30 * 3) = 384 config + 10 car on en garde 10 a la fin
+# 30 min par match
+# 2 défaites par config
+# 4 match en mm temps => 4 défaites par batch
+# x = 4 * 5760 / (30 * 2) = 384 config + 10 car on en garde 10 a la fin
 
-LIVES = 3  
+LIVES = 2  
 SAVE_FILE = "testing_configurations.json"  
 DIR = "./Divercite"
 ENV = "INF8175"
@@ -187,11 +187,11 @@ def run_tournament(testing_set):
     while len(testing_set) > 10:
 
         filtered_testing_set = [config for config in testing_set if config["matches"] == min_matches_done]
-        batch = random.sample(filtered_testing_set, min(12, len(filtered_testing_set)))
-        if len(batch) < 12:
-            batch += random.sample(testing_set, 12 - len(batch))
+        batch = random.sample(filtered_testing_set, min(8, len(filtered_testing_set)))
+        if len(batch) < 8:
+            batch += random.sample(testing_set, 8 - len(batch))
         
-        with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
             futures = {executor.submit(evaluate_agent, batch[i], batch[i+1], i): (batch[i], batch[i+1]) for i in range(0, len(batch), 2)}
 
             for future in concurrent.futures.as_completed(futures):
