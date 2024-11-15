@@ -44,7 +44,7 @@ AGENT_FILES = ["charalv3.py", "charalv3_2.py"] # SAME AGENT but will retrieve di
 PARAM_RANGES = {
     "OPPONENT_SCORE_MULT": (0.5, 2, 0.5), # 4 values
     "THRESHOLD": (30, 60, 10), # 3 values 
-    "LEN_DIVIDE": (1, 4, 1), # 3 values
+    "LEN_DIVIDE": (2, 4, 1), # 3 values
     "MAX_ACTIONS": (20, 50, 10), # 3 values 
     "SELF_CITY_GAIN_MULT": (0.5, 2, 0.5), # 4 values
     "OPPONENT_CITY_GAIN_MULT": (0.5, 2, 0.5), # 4 values 
