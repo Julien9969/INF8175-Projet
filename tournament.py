@@ -169,6 +169,7 @@ def evaluate_agent(config1, config2, p=1) -> list[tuple[int, int]]:
 
     if err:
         logger.error(f"Error in match between {config1['id']} and {config2['id']}: {err}")
+
         return -1
 
     # if "-" in agent1_score or "-" in agent2_score: # negative score
@@ -198,6 +199,10 @@ def run_tournament(testing_set):
                 config1, config2 = futures[future]
                 try:
                     winner_id = future.result()
+
+                    if winner_id == -1:
+                        config1["lives"] -= 1
+                        config2["lives"] -= 1
 
                     if winner_id != config1["id"]:
                         config1["lives"] -= 1
