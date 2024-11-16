@@ -185,9 +185,9 @@ def evaluate_agent(config1, config2, p=1) -> list[tuple[int, int]]:
 def run_tournament(testing_set):
     min_matches_done = min([config["matches"] for config in testing_set])
 
-    while len(testing_set) > 10:
+    while len(testing_set) > 3:
 
-        filtered_testing_set = [config for config in testing_set if config["matches"] == min_matches_done]
+        filtered_testing_set = [config for config in testing_set if config["matches"] == min_matches_done and config["lives"] > 0]
         batch = random.sample(filtered_testing_set, min(8, len(filtered_testing_set)))
         if len(batch) < 8:
             batch += random.sample(testing_set, 8 - len(batch))
@@ -215,7 +215,7 @@ def run_tournament(testing_set):
                 except Exception as exc:
                     logger.error(f'future exception: {exc}')
 
-        testing_set = [config for config in testing_set if config["lives"] > 0]
+        # testing_set = [config for config in testing_set if config["lives"] > 0]
 
         min_matches_done = min([config["matches"] for config in testing_set])
 
