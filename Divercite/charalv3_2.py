@@ -146,8 +146,8 @@ class MyPlayer(PlayerDivercite):
 
 
     def depth_depend_on_actions(self, length: list) -> int:
-        # if (self.remaining_time - (time.time() - self.start_time)) < 80: 
-        #     return 3
+        if (self.remaining_time - (time.time() - self.start_time)) < 80: 
+            return 3
         
         if length < 6:
             return 10
