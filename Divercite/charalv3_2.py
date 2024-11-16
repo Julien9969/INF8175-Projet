@@ -157,7 +157,7 @@ class MyPlayer(PlayerDivercite):
             return 7
         if length < 18:
             return 6
-        if length < 30:
+        if length < 35:
             return 5
         if length < 70:
             return 4
