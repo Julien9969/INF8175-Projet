@@ -25,8 +25,8 @@
             "NEAR_MY_CITY_SCORE": 1.5,
             "SAME_COLOR_CITY_BONUS": 0
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -3,
+        "matches": 13
     },
     {
         "id": 23,
@@ -54,8 +54,8 @@
             "NEAR_MY_CITY_SCORE": 1.5,
             "SAME_COLOR_CITY_BONUS": 1
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -3,
+        "matches": 12
     },
     {
         "id": 24,
@@ -83,8 +83,8 @@
             "NEAR_MY_CITY_SCORE": 0.5,
             "SAME_COLOR_CITY_BONUS": 1
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -3,
+        "matches": 14
     },
     {
         "id": 39,
@@ -112,8 +112,8 @@
             "NEAR_MY_CITY_SCORE": 1.5,
             "SAME_COLOR_CITY_BONUS": 1
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -4,
+        "matches": 13
     },
     {
         "id": 42,
@@ -141,8 +141,8 @@
             "NEAR_MY_CITY_SCORE": 1.0,
             "SAME_COLOR_CITY_BONUS": 1
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -1,
+        "matches": 14
     },
     {
         "id": 75,
@@ -170,8 +170,8 @@
             "NEAR_MY_CITY_SCORE": 0.5,
             "SAME_COLOR_CITY_BONUS": 0
         },
-        "lives": 5,
-        "matches": 0
+        "lives": 2,
+        "matches": 14
     },
     {
         "id": 84,
@@ -199,8 +199,8 @@
             "NEAR_MY_CITY_SCORE": 0.5,
             "SAME_COLOR_CITY_BONUS": 1
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -2,
+        "matches": 11
     },
     {
         "id": 206,
@@ -228,8 +228,8 @@
             "NEAR_MY_CITY_SCORE": 1.5,
             "SAME_COLOR_CITY_BONUS": 0
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -4,
+        "matches": 10
     },
     {
         "id": 212,
@@ -257,8 +257,8 @@
             "NEAR_MY_CITY_SCORE": 1.5,
             "SAME_COLOR_CITY_BONUS": 1
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -5,
+        "matches": 15
     },
     {
         "id": 221,
@@ -286,7 +286,7 @@
             "NEAR_MY_CITY_SCORE": 0.5,
             "SAME_COLOR_CITY_BONUS": 0
         },
-        "lives": 5,
-        "matches": 0
+        "lives": -1,
+        "matches": 12
     }
 ]
