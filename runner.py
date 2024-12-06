@@ -15,7 +15,7 @@ SHELL = "bash"
 # agent2_name = "greedy_player_divercite.py" #findus200v2.py"
 
 agent1_name = "charalv3.py"
-agent2_name = "charalv3.py"
+agent2_name = "charalv3_2.py"
 
 class GameResult:
     def __init__(self, i, agent1, score1, time1, agent2, score2, time2, winner):

@@ -2,6 +2,7 @@ from player_divercite import PlayerDivercite
 from seahorse.game.action import Action
 from seahorse.game.game_state import GameState
 from game_state_divercite import GameStateDivercite
+from seahorse.utils.custom_exceptions import MethodNotImplementedError
 
 from seahorse.game.heavy_action import HeavyAction
 from seahorse.game.light_action import LightAction
@@ -10,76 +11,6 @@ from game_state_divercite import BoardDivercite
 
 
 import math, random, time
-import sys, json
-
-
-# Filter Action
-THRESHOLD = 25
-LEN_DIVIDE = 2
-MAX_ACTIONS = 50
-
-# State Heuristic
-OPPONENT_SCORE_MULT = 1
-DIV_CITY_HEUR = 2
-
-# Action Heuristic
-SELF_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on a city
-OPPONENT_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on an opponent city
-RESSOURCE_BALANCE = 2 # base value for the balance of the ressources pieces
-CITY_BALANCE = 2 # base value for the balance of the cities pieces
-
-# Evaluate my city
-DIVERSITY_SCORE = 6 # score for a diversity
-STILL_POSSIBLE_DIVERSITY_MULT = 1 # score for a diversity that is still possible
-SCORE_FOR_COLOR_MULT = 1 # mult the score for a color around a city 
-
-# Evaluate opponent city
-CANCEL_DIVERSITY_SCORE = 4 # score for a diversity that is canceled
-CANCEL_IN_PROGRESS_DIVERSITY_SCORE = 2 # score for a diversity that is canceled in progress
-NOT_COMPLETABLE_DIVERSITY_SCORE = 0
-BONUS_CANCEL_WITH_OTHER_COL = 1
-
-# City heuristic
-NEAR_OPPONENT_CITY_SCORE = 1
-DIFFERENT_COLOR_CITY_BONUS = 2
-IN_PROGRESS_DIVERSITY_MULT = 1
-CITY_COLOR_SCORE = 1
-SAME_COLOR_CITY_BONUS = 1
-NEAR_MY_CITY_SCORE = 1
-
-
-
-# THRESHOLD = SAME_COLOR_CITY_BONUS = NEAR_MY_CITY_SCORE = LEN_DIVIDE = MAX_ACTIONS = OPPONENT_SCORE_MULT = SELF_CITY_GAIN_MULT = OPPONENT_CITY_GAIN_MULT = RESSOURCE_BALANCE = CITY_BALANCE = DIVERSITY_SCORE = STILL_POSSIBLE_DIVERSITY_MULT = SCORE_FOR_COLOR_MULT = CANCEL_DIVERSITY_SCORE = CANCEL_IN_PROGRESS_DIVERSITY_SCORE = NOT_COMPLETABLE_DIVERSITY_SCORE = BONUS_CANCEL_WITH_OTHER_COL = NEAR_OPPONENT_CITY_SCORE = DIFFERENT_COLOR_CITY_BONUS = IN_PROGRESS_DIVERSITY_MULT = CITY_COLOR_SCORE = DIV_CITY_HEUR = None
-
-def load_testing_set():
-    global THRESHOLD, LEN_DIVIDE, MAX_ACTIONS, OPPONENT_SCORE_MULT, SELF_CITY_GAIN_MULT, OPPONENT_CITY_GAIN_MULT, RESSOURCE_BALANCE, CITY_BALANCE, DIVERSITY_SCORE, STILL_POSSIBLE_DIVERSITY_MULT, SCORE_FOR_COLOR_MULT, CANCEL_DIVERSITY_SCORE, CANCEL_IN_PROGRESS_DIVERSITY_SCORE, NOT_COMPLETABLE_DIVERSITY_SCORE, BONUS_CANCEL_WITH_OTHER_COL, NEAR_OPPONENT_CITY_SCORE, DIFFERENT_COLOR_CITY_BONUS, IN_PROGRESS_DIVERSITY_MULT, CITY_COLOR_SCORE, DIV_CITY_HEUR, SAME_COLOR_CITY_BONUS, NEAR_MY_CITY_SCORE
-
-    params_dict = json.loads(sys.argv[9])
-
-    THRESHOLD = params_dict["THRESHOLD"]
-    LEN_DIVIDE = params_dict["LEN_DIVIDE"]
-    MAX_ACTIONS = params_dict["MAX_ACTIONS"]
-    OPPONENT_SCORE_MULT = params_dict["OPPONENT_SCORE_MULT"]
-    SELF_CITY_GAIN_MULT = params_dict["SELF_CITY_GAIN_MULT"]
-    OPPONENT_CITY_GAIN_MULT = params_dict["OPPONENT_CITY_GAIN_MULT"]
-    RESSOURCE_BALANCE = params_dict["RESSOURCE_BALANCE"]
-    CITY_BALANCE = params_dict["CITY_BALANCE"]
-    DIVERSITY_SCORE = params_dict["DIVERSITY_SCORE"]
-    STILL_POSSIBLE_DIVERSITY_MULT = params_dict["STILL_POSSIBLE_DIVERSITY_MULT"]
-    SCORE_FOR_COLOR_MULT = params_dict["SCORE_FOR_COLOR_MULT"]
-    CANCEL_DIVERSITY_SCORE = params_dict["CANCEL_DIVERSITY_SCORE"]
-    CANCEL_IN_PROGRESS_DIVERSITY_SCORE = params_dict["CANCEL_IN_PROGRESS_DIVERSITY_SCORE"]
-    NOT_COMPLETABLE_DIVERSITY_SCORE = params_dict["NOT_COMPLETABLE_DIVERSITY_SCORE"]
-    BONUS_CANCEL_WITH_OTHER_COL = params_dict["BONUS_CANCEL_WITH_OTHER_COL"]
-    NEAR_OPPONENT_CITY_SCORE = params_dict["NEAR_OPPONENT_CITY_SCORE"]
-    DIFFERENT_COLOR_CITY_BONUS = params_dict["DIFFERENT_COLOR_CITY_BONUS"]
-    IN_PROGRESS_DIVERSITY_MULT = params_dict["IN_PROGRESS_DIVERSITY_MULT"]
-    CITY_COLOR_SCORE = params_dict["CITY_COLOR_SCORE"]
-    DIV_CITY_HEUR = params_dict["DIV_CITY_HEUR"]
-    SAME_COLOR_CITY_BONUS = params_dict["SAME_COLOR_CITY_BONUS"]
-    NEAR_MY_CITY_SCORE = params_dict["NEAR_MY_CITY_SCORE"]
-
-# load_testing_set()
 
 class MyPlayer(PlayerDivercite):
     """
@@ -99,7 +30,7 @@ class MyPlayer(PlayerDivercite):
             time_limit (float, optional): the time limit in (s)
         """
         super().__init__(piece_type, name)
-        self.open: list[LightAction] = []# [LightAction({"piece": "RC", "position": (6, 5)}), LightAction({"piece": "BC", "position": (5, 6)})]#, LightAction({"piece": "BR", "position": (6, 6)}), LightAction({"piece": "RR", "position": (5, 5)})]
+        self.open: list[LightAction] = [LightAction({"piece": "RC", "position": (6, 5)}), LightAction({"piece": "BC", "position": (5, 6)})]#, LightAction({"piece": "BR", "position": (6, 6)}), LightAction({"piece": "RR", "position": (5, 5)})]
         self.is_start_player = False
 
 
@@ -131,65 +62,76 @@ class MyPlayer(PlayerDivercite):
         if len(current_state.rep.env.items()) == 0:
             self.is_start_player = True
         
-        # if self.is_start_player and len(self.open) > 0:
-        #     fist_action = self.open.pop(0)
-        #     while not current_state.check_action(fist_action) and len(self.open) > 0:
-        #         fist_action = self.open.pop(0)
+        if self.is_start_player and len(self.open) > 0:
+            fist_action = self.open.pop(0)
+            while not current_state.check_action(fist_action) and len(self.open) > 0:
+                fist_action = self.open.pop(0)
             
-        #     if current_state.check_action(fist_action):
-        #         return fist_action.get_heavy_action(current_state)
+            if current_state.check_action(fist_action):
+                return fist_action.get_heavy_action(current_state)
 
-        # depth = self.depth_depend_on_actions(len(self.filter_actions(current_state)))
-        # print("Depth: ", depth)
-        action = self.alpha_beta_search(current_state)        
+        depth = self.depth_depend_on_actions(len(self.filter_actions(current_state)))
+        print("Depth: ", depth)
+        action = self.alpha_beta_search(current_state, depth)
         return action
 
 
     def depth_depend_on_actions(self, length: list) -> int:
+        # print(length)
         if (self.remaining_time - (time.time() - self.start_time)) < 80: 
             return 3
-        
+        if length < 6:
+            return 12
+        # if length < 11:
+        #     return 9
+        # if length < 13:
+        #     return 7
+        # if length < 20:
+        #     return 6
+        # if length < 43:
+        #     return 5
+        # if length < 80:
+        #     return 4
+        # return 3
         if length < 6:
             return 10
-        if length < 11:
+
+        if length < 10:
             return 8
         if length < 15:
             return 7
-        if length < 18:
-            return 6
-        if length < 32:
+        # if length < 20:
+        #     return 6
+        if length < 45:
             return 5
-        if length < 70:
+        if length < 50:
             return 4
         return 3
 
-    def alpha_beta_search(self, current_state: GameStateDivercite) -> Action:
+    def alpha_beta_search(self, current_state: GameStateDivercite, depth) -> Action:
         
         alpha = -math.inf
         beta = math.inf
-        best_action, (tt, state) = self.max_value(current_state, alpha, beta, -1, action_heur=-1) 
+        best_action, (tt, hp) = self.max_value(current_state, alpha, beta, depth) 
 
+        print("TT: ", tt, "HP: ", hp)
         return best_action
 
 
-    def max_value(self, state: GameStateDivercite, alpha: float, beta: float, depth: int, action_heur=0) -> tuple[Action, float]:
+    def max_value(self, state: GameStateDivercite, alpha: float, beta: float, depth: int, act_heur=0) -> tuple[Action, float]:
         if depth == 0 or state.is_done():
-            h = self.state_heuristic(state, action_heur)
-            return None, (h, state)
+            h = self.state_heuristic(state, act_heur)
+            return None, (h, act_heur)
 
         best_action = None
         value = -math.inf
         
-        actions = self.filter_actions(state, action_heur)
+        actions = self.filter_actions(state, act_heur)
 
-        if depth == -1:
-            depth = self.depth_depend_on_actions(len(actions))
-        else:
-            depth = min(depth, self.depth_depend_on_actions(len(actions)))
+        # depth = min(depth, self.depth_depend_on_actions(len(actions)))
 
         for action, act_heur in actions:
             heavy_action = action.get_heavy_action(state)
-            
             next_state = heavy_action.get_next_game_state()
             _, (next_value, next_he) = self.min_value(next_state, alpha, beta, depth - 1, act_heur)
             
@@ -210,14 +152,14 @@ class MyPlayer(PlayerDivercite):
     def min_value(self, state: GameStateDivercite, alpha: float, beta: float, depth: int, act_heur=0) -> tuple[Action, float]:
         if depth == 0 or state.is_done():
             h = self.state_heuristic(state, act_heur)
-            return None, (h, state)
+            return None, (h, act_heur)
 
         best_action = None
         value = math.inf
 
         actions = self.filter_actions(state, act_heur)
-        
-        depth = min(depth, self.depth_depend_on_actions(len(actions)))
+
+        # depth = min(depth, self.depth_depend_on_actions(len(actions)))
 
         for action, act_heur in actions:
             heavy_action = action.get_heavy_action(state)
@@ -249,7 +191,7 @@ class MyPlayer(PlayerDivercite):
             return [(action, 1) for action in actions]
 
         filtered_actions = sorted(actions_with_heuristics, key=lambda x: x[1], reverse=True)
-        return filtered_actions[:min(len(filtered_actions)//LEN_DIVIDE, MAX_ACTIONS)] if len(filtered_actions) > THRESHOLD else filtered_actions
+        return filtered_actions[:min(len(filtered_actions)//3, 30)] if len(filtered_actions) > 20 else filtered_actions
    
 
     def state_heuristic(self, state: GameStateDivercite, ligth_action_heur: int = 0) -> int:
@@ -258,21 +200,20 @@ class MyPlayer(PlayerDivercite):
         score = 0
         opponent_score = 0#state.scores[self.opponent_id]
         
-        pieces_on_board = state.rep.env.items()
+        pieces_on_borad = state.rep.env.items()
 
-        for pos, piece in pieces_on_board:
+        for pos, piece in pieces_on_borad:
             if isinstance(piece, Piece):
                 if piece.get_type()[1] == 'C':
                     if piece.owner_id == player_id:
                         score += self.evaluate_my_city((piece, pos), state)
-                        score += self.city_position_heuristic(state, {"piece": piece.get_type(), "position": pos}, player_id)//DIV_CITY_HEUR
                         opponent_score += self.evaluate_opponent_city((piece, pos), state)
                     else:
                         score += self.evaluate_opponent_city((piece, pos), state)
                         opponent_score += self.evaluate_my_city((piece, pos), state)
-                        opponent_score += self.city_position_heuristic(state, {"piece": piece.get_type(), "position": pos}, self.opponent_id)//DIV_CITY_HEUR
 
-        return score - opponent_score * OPPONENT_SCORE_MULT#*1.5 #* 1.5# * 0.6
+        return score - opponent_score#*1.5 #* 1.5# * 0.6
+
 
 
     # try to uniformize the usage of pice by color
@@ -280,7 +221,6 @@ class MyPlayer(PlayerDivercite):
         player_id = self.get_id()
         opponent_id = self.opponent_id
         
-        temp = 0
         if action.data['piece'].endswith('R'):
             value = 0
             x, y = action.data['position']
@@ -291,18 +231,19 @@ class MyPlayer(PlayerDivercite):
                     continue
                 if neighbor_piece[0].piece_type[1] == 'C':  
                     if neighbor_piece[0].owner_id == player_id:
-                        temp = self.evaluate_my_city(neighbor_piece, state, action.data['piece'][0]) #- self.evaluate_my_city(neighbor_piece, state)
-                        value += temp * SELF_CITY_GAIN_MULT if temp > 0 else 0
+                        value += self.evaluate_my_city(neighbor_piece, state, action.data['piece'][0])
                     else:
-                        temp = self.evaluate_opponent_city(neighbor_piece, state, action.data['piece'][0]) #- self.evaluate_opponent_city(neighbor_piece, state)
-                        value += temp * OPPONENT_CITY_GAIN_MULT if temp > 0 else 0
+                        value += self.evaluate_opponent_city(neighbor_piece, state, action.data['piece'][0])
             
             # don't want to expend action of resource if no city around or don't cancel opponent divercite
             if value <= 0:
                 return 0
         else:
             value = 1
-            value += self.city_position_heuristic(state, action.data, player_id) 
+            x, y = action.data['position']
+            neighbours: dict[str|Piece, tuple] = state.get_neighbours(x, y)
+
+            value += self.city_heuristic(neighbours, action.data['piece'][0])
         
         remaining_pieces = state.players_pieces_left[player_id]
         remaining_pieces[action.data['piece']] -= 1
@@ -320,16 +261,23 @@ class MyPlayer(PlayerDivercite):
             'B': remaining_pieces['BC'],
             'Y': remaining_pieces['YC']
         }
-        
+
+        # color_counts = {
+        #     'R': 3 + 2,
+        #     'G': 2 + 2,
+        #     'B': 0 + 1,
+        #     'Y': 3 + 0
+        # }
         avg_pieces = sum(color_counts_R.values()) / len(color_counts_R)
         imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_R.values())
 
-        value += RESSOURCE_BALANCE / (imbalance_penalty/2 + 1)
-        
+
+        value += 1 / (imbalance_penalty/2 + 1)
+
         avg_pieces = sum(color_counts_C.values()) / len(color_counts_C)
         imbalance_penalty = sum(abs(count - avg_pieces) for count in color_counts_C.values())
 
-        value += CITY_BALANCE / (imbalance_penalty/2 + 1)
+        value += 1 / (imbalance_penalty/2 + 1)
 
         remaining_pieces[action.data['piece']] += 1 # restore the state
 
@@ -344,16 +292,14 @@ class MyPlayer(PlayerDivercite):
 
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color) 
-        
-        # I do a diversity
         if len(set(neighbor_piece_colors)) == 4:
-            return DIVERSITY_SCORE 
+            return 6 
         
-        # Diversity is still possible
+        
         if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors) and self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
-            return STILL_POSSIBLE_DIVERSITY_MULT * len(neighbor_piece_colors) #+ 1 if piece_color != city[0].get_type()[0] else 0
+            return 0#len(neighbor_piece_colors) + (1 if len(neighbor_piece_colors) == 3 else 0)
         else:
-            return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]]) * SCORE_FOR_COLOR_MULT
+            return len([p for p in neighbor_piece_colors if p == city[0].get_type()[0]]) + 2
         
 
     def evaluate_opponent_city(self, city: tuple[Piece, tuple[int, int]], state: GameStateDivercite, piece_color=None) -> int:
@@ -361,52 +307,28 @@ class MyPlayer(PlayerDivercite):
         neighbors = state.rep.get_neighbours(city_pos[0], city_pos[1])
 
         neighbor_piece_colors = [n[0].get_type()[0] for n in neighbors.values() if isinstance(n[0], Piece)]
-        if len(neighbor_piece_colors) == len(set(neighbor_piece_colors)) and not self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
-            return NOT_COMPLETABLE_DIVERSITY_SCORE
+        if len(neighbor_piece_colors) < 3 or len(neighbor_piece_colors) != len(set(neighbor_piece_colors)) or not self.has_needed_pieces(neighbor_piece_colors, state.players_pieces_left[city[0].owner_id]):
+            return 0
         
         if not piece_color is None:
             neighbor_piece_colors.append(piece_color)
-        
-        # Cancel opponent diversity is good for me
+            
         if len(neighbor_piece_colors) == 4 and len(set(neighbor_piece_colors)) != 4:
-            return CANCEL_DIVERSITY_SCORE
+            return 12
         
-        # Cancel in progress opponent diversity is good for me
         if len(neighbor_piece_colors) == 3 and len(set(neighbor_piece_colors)) != 3:
-            return CANCEL_IN_PROGRESS_DIVERSITY_SCORE + BONUS_CANCEL_WITH_OTHER_COL if piece_color != city[0].get_type()[0] else 0
-        
+            return 4 + 1 if piece_color != city[0].get_type()[0] else 0
         return 0
 
 
-    def city_position_heuristic(self, state: GameStateDivercite, piece: dict[str, tuple|str], player_id: str) -> int:
-        city_color = piece['piece'][0]
-        x, y = piece['position']
-        neighbours = state.get_neighbours(x, y)
+    def city_heuristic(self, neighbours: dict[str|Piece, tuple], city_color) -> int:
+        neighbor_piece_colors = [n[0].get_type()[0] for n in neighbours.values() if isinstance(n[0], Piece)]
 
-        near_city = 0
-
-        for neighbours_city in self.get_neighbours_city(x, y, state).values():
-            if neighbours_city is None:
-                continue
-            if neighbours_city.piece_type[1] == 'C' and neighbours_city.owner_id != player_id:
-                near_city += NEAR_OPPONENT_CITY_SCORE + DIFFERENT_COLOR_CITY_BONUS if neighbours_city.piece_type[0] != city_color else 0
-            else:
-                near_city += NEAR_MY_CITY_SCORE + SAME_COLOR_CITY_BONUS if neighbours_city.piece_type[0] == city_color else 0
+        if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
+            return (2 if len(neighbor_piece_colors) == 3 else 0)
+        else:
+            return sum(2 for color in neighbor_piece_colors if color == city_color)
         
-
-    def get_neighbours_city(self, x, y, state: GameStateDivercite) -> dict[str, None|Piece]:
-        current_board = state.rep.env
-        neighbours = {"top":(x-1, y+1), "left":(x+1,y-1), "bot":(x-1, y+1), "right":(x+1,y+1)}
-
-        for k,v in neighbours.items():
-            if v in current_board.keys():
-                neighbours[k] = current_board[v]
-            else:
-                neighbours[k] = None
-        
-        return neighbours
-    
-
     def has_needed_pieces(self, current_pieces_colors: list[str], remaining_pieces: dict[str, int]) -> bool:
         needed_color = []
         for color in ['R', 'G', 'B', 'Y']:

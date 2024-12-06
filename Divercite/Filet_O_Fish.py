@@ -14,47 +14,97 @@ import sys, json
 
 
 # Filter Action
-THRESHOLD = 25
-LEN_DIVIDE = 2
-MAX_ACTIONS = 50
+# THRESHOLD = 25
+# LEN_DIVIDE = 2
+# MAX_ACTIONS = 50
 
-# State Heuristic
-OPPONENT_SCORE_MULT = 1
-DIV_CITY_HEUR = 2
+# # State Heuristic
+# OPPONENT_SCORE_MULT = 1
+# DIV_CITY_HEUR = 2
 
-# Action Heuristic
-SELF_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on a city
-OPPONENT_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on an opponent city
-RESSOURCE_BALANCE = 2 # base value for the balance of the ressources pieces
-CITY_BALANCE = 2 # base value for the balance of the cities pieces
+# # Action Heuristic
+# SELF_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on a city
+# OPPONENT_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on an opponent city
+# RESSOURCE_BALANCE = 2 # base value for the balance of the ressources pieces
+# CITY_BALANCE = 2 # base value for the balance of the cities pieces
 
-# Evaluate my city
-DIVERSITY_SCORE = 6 # score for a diversity
-STILL_POSSIBLE_DIVERSITY_MULT = 1 # score for a diversity that is still possible
-SCORE_FOR_COLOR_MULT = 1 # mult the score for a color around a city 
+# # Evaluate my city
+# DIVERSITY_SCORE = 6 # score for a diversity
+# STILL_POSSIBLE_DIVERSITY_MULT = 1 # score for a diversity that is still possible
+# SCORE_FOR_COLOR_MULT = 1 # mult the score for a color around a city 
 
-# Evaluate opponent city
-CANCEL_DIVERSITY_SCORE = 4 # score for a diversity that is canceled
-CANCEL_IN_PROGRESS_DIVERSITY_SCORE = 2 # score for a diversity that is canceled in progress
-NOT_COMPLETABLE_DIVERSITY_SCORE = 0
-BONUS_CANCEL_WITH_OTHER_COL = 1
+# # Evaluate opponent city
+# CANCEL_DIVERSITY_SCORE = 4 # score for a diversity that is canceled
+# CANCEL_IN_PROGRESS_DIVERSITY_SCORE = 2 # score for a diversity that is canceled in progress
+# NOT_COMPLETABLE_DIVERSITY_SCORE = 0
+# BONUS_CANCEL_WITH_OTHER_COL = 1
 
-# City heuristic
-NEAR_OPPONENT_CITY_SCORE = 1
-DIFFERENT_COLOR_CITY_BONUS = 2
-IN_PROGRESS_DIVERSITY_MULT = 1
-CITY_COLOR_SCORE = 1
-SAME_COLOR_CITY_BONUS = 1
-NEAR_MY_CITY_SCORE = 1
+# # City heuristic
+# NEAR_OPPONENT_CITY_SCORE = 1
+# DIFFERENT_COLOR_CITY_BONUS = 2
+# IN_PROGRESS_DIVERSITY_MULT = 1
+# CITY_COLOR_SCORE = 1
+# SAME_COLOR_CITY_BONUS = 1
+# NEAR_MY_CITY_SCORE = 1
 
 
 
-# THRESHOLD = SAME_COLOR_CITY_BONUS = NEAR_MY_CITY_SCORE = LEN_DIVIDE = MAX_ACTIONS = OPPONENT_SCORE_MULT = SELF_CITY_GAIN_MULT = OPPONENT_CITY_GAIN_MULT = RESSOURCE_BALANCE = CITY_BALANCE = DIVERSITY_SCORE = STILL_POSSIBLE_DIVERSITY_MULT = SCORE_FOR_COLOR_MULT = CANCEL_DIVERSITY_SCORE = CANCEL_IN_PROGRESS_DIVERSITY_SCORE = NOT_COMPLETABLE_DIVERSITY_SCORE = BONUS_CANCEL_WITH_OTHER_COL = NEAR_OPPONENT_CITY_SCORE = DIFFERENT_COLOR_CITY_BONUS = IN_PROGRESS_DIVERSITY_MULT = CITY_COLOR_SCORE = DIV_CITY_HEUR = None
+THRESHOLD = SAME_COLOR_CITY_BONUS = NEAR_MY_CITY_SCORE = LEN_DIVIDE = MAX_ACTIONS = OPPONENT_SCORE_MULT = SELF_CITY_GAIN_MULT = OPPONENT_CITY_GAIN_MULT = RESSOURCE_BALANCE = CITY_BALANCE = DIVERSITY_SCORE = STILL_POSSIBLE_DIVERSITY_MULT = SCORE_FOR_COLOR_MULT = CANCEL_DIVERSITY_SCORE = CANCEL_IN_PROGRESS_DIVERSITY_SCORE = NOT_COMPLETABLE_DIVERSITY_SCORE = BONUS_CANCEL_WITH_OTHER_COL = NEAR_OPPONENT_CITY_SCORE = DIFFERENT_COLOR_CITY_BONUS = IN_PROGRESS_DIVERSITY_MULT = CITY_COLOR_SCORE = DIV_CITY_HEUR = None
 
 def load_testing_set():
     global THRESHOLD, LEN_DIVIDE, MAX_ACTIONS, OPPONENT_SCORE_MULT, SELF_CITY_GAIN_MULT, OPPONENT_CITY_GAIN_MULT, RESSOURCE_BALANCE, CITY_BALANCE, DIVERSITY_SCORE, STILL_POSSIBLE_DIVERSITY_MULT, SCORE_FOR_COLOR_MULT, CANCEL_DIVERSITY_SCORE, CANCEL_IN_PROGRESS_DIVERSITY_SCORE, NOT_COMPLETABLE_DIVERSITY_SCORE, BONUS_CANCEL_WITH_OTHER_COL, NEAR_OPPONENT_CITY_SCORE, DIFFERENT_COLOR_CITY_BONUS, IN_PROGRESS_DIVERSITY_MULT, CITY_COLOR_SCORE, DIV_CITY_HEUR, SAME_COLOR_CITY_BONUS, NEAR_MY_CITY_SCORE
 
-    params_dict = json.loads(sys.argv[9])
+    # params_dict = json.loads(sys.argv[8])
+    params_dict = {
+            "OPPONENT_SCORE_MULT": 1.0,
+            "THRESHOLD": 50,
+            "LEN_DIVIDE": 2,
+            "MAX_ACTIONS": 30,
+            "SELF_CITY_GAIN_MULT": 1.0,
+            "OPPONENT_CITY_GAIN_MULT": 1.5,
+            "RESSOURCE_BALANCE": 1,
+            "CITY_BALANCE": 2,
+            "DIVERSITY_SCORE": 4,
+            "STILL_POSSIBLE_DIVERSITY_MULT": 1.5,
+            "SCORE_FOR_COLOR_MULT": 0.5,
+            "CANCEL_DIVERSITY_SCORE": 5,
+            "CANCEL_IN_PROGRESS_DIVERSITY_SCORE": 1,
+            "NOT_COMPLETABLE_DIVERSITY_SCORE": 2,
+            "BONUS_CANCEL_WITH_OTHER_COL": 2,
+            "NEAR_OPPONENT_CITY_SCORE": 1.5,
+            "DIFFERENT_COLOR_CITY_BONUS": 1.5,
+            "IN_PROGRESS_DIVERSITY_MULT": 1.0,
+            "CITY_COLOR_SCORE": 1.0,
+            "DIV_CITY_HEUR": 1.5,
+            "NEAR_MY_CITY_SCORE": 0.5,
+            "SAME_COLOR_CITY_BONUS": 0
+        }
+    
+    params_dict = {
+            "OPPONENT_SCORE_MULT": 0.5,
+            "THRESHOLD": 40,
+            "LEN_DIVIDE": 3,
+            "MAX_ACTIONS": 20,
+            "SELF_CITY_GAIN_MULT": 0.5,
+            "OPPONENT_CITY_GAIN_MULT": 1.0,
+            "RESSOURCE_BALANCE": 2,
+            "CITY_BALANCE": 3,
+            "DIVERSITY_SCORE": 4,
+            "STILL_POSSIBLE_DIVERSITY_MULT": 1.5,
+            "SCORE_FOR_COLOR_MULT": 1.5,
+            "CANCEL_DIVERSITY_SCORE": 3,
+            "CANCEL_IN_PROGRESS_DIVERSITY_SCORE": 1,
+            "NOT_COMPLETABLE_DIVERSITY_SCORE": 1,
+            "BONUS_CANCEL_WITH_OTHER_COL": 0,
+            "NEAR_OPPONENT_CITY_SCORE": 1.0,
+            "DIFFERENT_COLOR_CITY_BONUS": 0.5,
+            "IN_PROGRESS_DIVERSITY_MULT": 1.0,
+            "CITY_COLOR_SCORE": 1.5,
+            "DIV_CITY_HEUR": 0.5,
+            "NEAR_MY_CITY_SCORE": 0.5,
+            "SAME_COLOR_CITY_BONUS": 0
+        }
+
 
     THRESHOLD = params_dict["THRESHOLD"]
     LEN_DIVIDE = params_dict["LEN_DIVIDE"]
@@ -79,7 +129,7 @@ def load_testing_set():
     SAME_COLOR_CITY_BONUS = params_dict["SAME_COLOR_CITY_BONUS"]
     NEAR_MY_CITY_SCORE = params_dict["NEAR_MY_CITY_SCORE"]
 
-# load_testing_set()
+load_testing_set()
 
 class MyPlayer(PlayerDivercite):
     """
@@ -265,12 +315,12 @@ class MyPlayer(PlayerDivercite):
                 if piece.get_type()[1] == 'C':
                     if piece.owner_id == player_id:
                         score += self.evaluate_my_city((piece, pos), state)
-                        score += self.city_position_heuristic(state, {"piece": piece.get_type(), "position": pos}, player_id)//DIV_CITY_HEUR
+                        score += self.city_heuristic(state, {"piece": piece.get_type(), "position": pos}, player_id)//DIV_CITY_HEUR
                         opponent_score += self.evaluate_opponent_city((piece, pos), state)
                     else:
                         score += self.evaluate_opponent_city((piece, pos), state)
                         opponent_score += self.evaluate_my_city((piece, pos), state)
-                        opponent_score += self.city_position_heuristic(state, {"piece": piece.get_type(), "position": pos}, self.opponent_id)//DIV_CITY_HEUR
+                        opponent_score += self.city_heuristic(state, {"piece": piece.get_type(), "position": pos}, self.opponent_id)//DIV_CITY_HEUR
 
         return score - opponent_score * OPPONENT_SCORE_MULT#*1.5 #* 1.5# * 0.6
 
@@ -302,7 +352,7 @@ class MyPlayer(PlayerDivercite):
                 return 0
         else:
             value = 1
-            value += self.city_position_heuristic(state, action.data, player_id) 
+            value += self.city_heuristic(state, action.data, player_id) 
         
         remaining_pieces = state.players_pieces_left[player_id]
         remaining_pieces[action.data['piece']] -= 1
@@ -378,7 +428,7 @@ class MyPlayer(PlayerDivercite):
         return 0
 
 
-    def city_position_heuristic(self, state: GameStateDivercite, piece: dict[str, tuple|str], player_id: str) -> int:
+    def city_heuristic(self, state: GameStateDivercite, piece: dict[str, tuple|str], player_id: str) -> int:
         city_color = piece['piece'][0]
         x, y = piece['position']
         neighbours = state.get_neighbours(x, y)
@@ -392,6 +442,14 @@ class MyPlayer(PlayerDivercite):
                 near_city += NEAR_OPPONENT_CITY_SCORE + DIFFERENT_COLOR_CITY_BONUS if neighbours_city.piece_type[0] != city_color else 0
             else:
                 near_city += NEAR_MY_CITY_SCORE + SAME_COLOR_CITY_BONUS if neighbours_city.piece_type[0] == city_color else 0
+
+        return near_city
+        # neighbor_piece_colors = [n[0].get_type()[0] for n in neighbours.values() if isinstance(n[0], Piece)]
+
+        # if len(set(neighbor_piece_colors)) == len(neighbor_piece_colors):
+        #     return len(set(neighbor_piece_colors)) * IN_PROGRESS_DIVERSITY_MULT + near_city # (1 if len(neighbor_piece_colors) == 3 else 0)
+        # else:
+        #     return sum(CITY_COLOR_SCORE for color in neighbor_piece_colors if color == city_color) + near_city
         
 
     def get_neighbours_city(self, x, y, state: GameStateDivercite) -> dict[str, None|Piece]:
