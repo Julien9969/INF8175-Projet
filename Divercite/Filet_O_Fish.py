@@ -13,36 +13,36 @@ import math, time
 
 
 # Filter Action
-THRESHOLD = 40
-LEN_DIVIDE = 3
-MAX_ACTIONS = 20
+THRESHOLD = 25
+LEN_DIVIDE = 2
+MAX_ACTIONS = 30
 
 # State Heuristic
 OPPONENT_SCORE_MULT = 0.5
 DIV_CITY_HEUR = 0.5
 
 # Action Heuristic
-SELF_CITY_GAIN_MULT = 0.5 # mult the gain (after - before) made by an action on a city
+SELF_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on a city
 OPPONENT_CITY_GAIN_MULT = 1 # mult the gain (after - before) made by an action on an opponent city
 RESSOURCE_BALANCE = 2 # base value for the balance of the ressources pieces
 CITY_BALANCE = 3 # base value for the balance of the cities pieces
 
 # Evaluate my city
-DIVERSITY_SCORE = 4 # score for a diversity
+DIVERSITY_SCORE = 6 # score for a diversity
 STILL_POSSIBLE_DIVERSITY_MULT = 1.5 # score for a diversity that is still possible
 SCORE_FOR_COLOR_MULT = 1.5 # mult the score for a color around a city 
 
 # Evaluate opponent city
-CANCEL_DIVERSITY_SCORE = 3 # score for a diversity that is canceled
+CANCEL_DIVERSITY_SCORE = 4 # score for a diversity that is canceled
 CANCEL_IN_PROGRESS_DIVERSITY_SCORE = 1 # score for a diversity that is canceled in progress
 NOT_COMPLETABLE_DIVERSITY_SCORE = 1
 BONUS_CANCEL_WITH_OTHER_COL = 0
 
 # City heuristic
 NEAR_OPPONENT_CITY_SCORE = 1
-DIFFERENT_COLOR_CITY_BONUS = 0.5
+DIFFERENT_COLOR_CITY_BONUS = 1
 IN_PROGRESS_DIVERSITY_MULT = 1
-CITY_COLOR_SCORE = 1.5
+CITY_COLOR_SCORE = 1
 SAME_COLOR_CITY_BONUS = 0
 NEAR_MY_CITY_SCORE = 0.5
 
